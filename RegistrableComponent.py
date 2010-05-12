@@ -1,7 +1,9 @@
+import logging
 import sys
 sys.path.append("../3rdParty")
 import sleekxmpp.componentxmpp
 from xml.etree import cElementTree as ET
+from pdb import set_trace
 
 class RegistrableComponent :
   def __init__(self, jid, password, server, port, backend) :
@@ -23,6 +25,7 @@ class RegistrableComponent :
     self.xmpp.add_handler("<iq type='set' xmlns='jabber:component:accept'>" +
       "<query xmlns='jabber:iq:register'/></iq>", self.handleRegistrationRequest)
     ## END NEW
+    self.log = logging.getLogger('bot')
 
   ## BEGIN NEW
   def handleRegistrationFormRequest(self, request) :
@@ -55,11 +58,18 @@ class RegistrableComponent :
 
   ## ...
   def handleXMPPConnected(self, event) :
+    self.log.debug('connected')
+
     for user in self.backend.getAllUsers() :
       if self.backend.getUserHasJID(user) :
-        self.xmpp.sendPresence(pto = self.backend.getJIDForUser(user))
+        jid = self.backend.getJIDForUser(user)
+        self.log.debug('sending presence to user "%s" with jid "%s"' % (user, jid))
+        self.xmpp.sendPresence(pto = jid)
+      else:
+        self.log.debug('"user %s" has no jid' % user)
 
   def handleIncomingXMPPEvent(self, event) :
+    self.log.debug('xmpp event: %r' % (event,))
     message = event["message"]
     user = self.backend.getUserFromJID(event["jid"])
     self.backend.addMessageFromUser(message, user)
