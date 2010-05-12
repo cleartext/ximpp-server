@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
-from Backend import Backend, Message, message_compare
+from backend.base import Backend as BaseBackend
+from backend.base import Message, message_compare
+
 import datetime
 
-class SimpleBackend (Backend) :
+class Backend(BaseBackend) :
   def __init__(self) :
-    Backend.__init__(self)
+    super(Backend, self).__init__()
+
     self.messages = {}
     self.contacts = {}
 

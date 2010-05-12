@@ -1,13 +1,13 @@
 def message_compare(m1, m2) :
 	return cmp(m1.date, m2.date)
 
-class Message :
+class Message(object):
 	def __init__(self, date, user, text) :
 		self.date = date
 		self.user = user
 		self.text = text
 
-class Backend :
+class Backend(object):
 	def __init__(self) :
 		self.handlers = []
 

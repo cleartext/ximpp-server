@@ -1,11 +1,10 @@
 import logging
-import sys
-sys.path.append("../3rdParty")
 import sleekxmpp.componentxmpp
+
 from xml.etree import cElementTree as ET
 from pdb import set_trace
 
-class RegistrableComponent :
+class Bot(object):
   def __init__(self, jid, password, server, port, backend) :
     self.xmpp = sleekxmpp.componentxmpp.ComponentXMPP(jid, password, server, port)
     self.xmpp.add_event_handler("session_start", self.handleXMPPConnected)
