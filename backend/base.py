@@ -1,19 +1,23 @@
-def message_compare(m1, m2) :
-	return cmp(m1.date, m2.date)
+""" Base primitives for the  backends. """
+
+def message_compare(m1, m2):
+    return cmp(m1.date, m2.date)
+
 
 class Message(object):
-	def __init__(self, date, user, text) :
-		self.date = date
-		self.user = user
-		self.text = text
+    def __init__(self, date, user, text):
+        self.date = date
+        self.user = user
+        self.text = text
+
 
 class Backend(object):
-	def __init__(self) :
-		self.handlers = []
+    def __init__(self):
+        self.handlers = []
 
-	def addMessageHandler(self, handler) :
-		self.handlers.append(handler)
-	
-	def notifyMessage(self, message) :
-		for handler in self.handlers :
-			handler(message)
+    def addMessageHandler(self, handler):
+        self.handlers.append(handler)
+
+    def notifyMessage(self, message):
+        for handler in self.handlers:
+            handler(message)
