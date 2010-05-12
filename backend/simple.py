@@ -1,15 +1,19 @@
 #!/usr/bin/env python
 
 import datetime
+import db
+
+from models import User
 
 from backend.base import Backend as BaseBackend
 from backend.base import Message, message_compare
 
 
 class Backend(BaseBackend):
-    def __init__(self):
+    def __init__(self, domain):
         super(Backend, self).__init__()
 
+        self.domain = domain
         self.messages = {}
         self.contacts = {}
 
@@ -28,21 +32,23 @@ class Backend(BaseBackend):
         }
         self.contacts = { 'remko': ['kevin', 'peter'] }
         self.subscribers = { 'kevin': ['remko'], 'peter': ['remko'] }
-        self.jidToUser = {
-            'remko@wonderland.lit': 'remko',
-            'peter@wonderland.lit': 'peter',
-            'kevin@wonderland.lit': 'kevin',
-        }
-        self.userToJID = {
-            'remko': 'remko@wonderland.lit',
-            'peter': 'peter@wonderland.lit',
-            'kevin': 'kevin@wonderland.lit'
-        }
-        self.userPresenceMonitoring = {
-            'kevin': True,
-            'remko': False,
-            'peter': True,
-        }
+
+        session = db.Session()
+
+        self.jidToUser = {}
+        self.userToJID = {}
+        self.userPresenceMonitoring = {}
+
+        for user in session.query(User):
+            username = user.username
+            self.log.debug('Reading user "%s"' % username)
+
+            jid = '%s@%s' % (username, self.domain)
+            self.jidToUser[jid] = username
+            self.userToJID[username] = jid
+
+            self.userPresenceMonitoring[username] = True
+
 
     def getMessages(self, user):
         messages = []
