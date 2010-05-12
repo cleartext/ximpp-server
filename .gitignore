@@ -1,2 +1,7 @@
 .*.swp
 *.pyc
+*.log
+.installed.cfg
+bin/
+eggs/
+parts/
