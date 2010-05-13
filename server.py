@@ -13,19 +13,14 @@ logging.basicConfig(
     format = '%(levelname)-8s %(message)s'
 )
 
-
-def main():
+def init():
     db.init('mysql://root:cleartext.netgeDiM76A5@localhost/coolbananas_com_au')
 
+
+
+def main():
+    init()
     backend = Backend(domain = 'coolbananas.com.au')
-#k    backend.jidToUser = {
-#k        'user1@coolbananas.com.au': 'peter',
-#k        'user2@coolbananas.com.au': 'kevin',
-#k    }
-#k    backend.userToJID = {
-#k        'peter': 'user1@coolbananas.com.au',
-#k        'kevin': 'user2@coolbananas.com.au'
-#k      }
     component = Bot(
         jid = "microblog.coolbananas.com.au", password = "cleartext7u$",
         server = "xmpp1.cleartext.im", port = 5349, backend = backend)

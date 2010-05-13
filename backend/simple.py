@@ -15,7 +15,6 @@ class Backend(BaseBackend):
 
         self.domain = domain
         self.messages = {}
-        self.contacts = {}
 
         # Dummy data
         self.messages = {
@@ -30,24 +29,7 @@ class Backend(BaseBackend):
                 Message(datetime.datetime(2008, 01, 04), 'remko', 'Woohoow, holidays!')
             ]
         }
-        self.contacts = { 'remko': ['kevin', 'peter'] }
-        self.subscribers = { 'kevin': ['remko'], 'peter': ['remko'] }
 
-        session = db.Session()
-
-        self.jidToUser = {}
-        self.userToJID = {}
-        self.userPresenceMonitoring = {}
-
-        for user in session.query(User):
-            username = user.username
-            self.log.debug('Reading user "%s"' % username)
-
-            jid = '%s@%s' % (username, self.domain)
-            self.jidToUser[jid] = username
-            self.userToJID[username] = jid
-
-            self.userPresenceMonitoring[username] = True
 
 
     def getMessages(self, user):
@@ -55,9 +37,12 @@ class Backend(BaseBackend):
         if self.messages.has_key(user):
             messages += self.messages[user]
 
-        for contact in self.contacts.get(user, []):
-            if self.messages.has_key(contact):
-                messages += self.messages[contact]
+        session = db.Session()
+        user = session.Query(User).filter(User.username == user).one()
+
+        for contact in user.contacts():
+            if self.messages.has_key(contact.username):
+                messages += self.messages[contact.username]
         messages.sort(reverse=True, cmp=message_compare)
         return messages
 
@@ -75,42 +60,58 @@ class Backend(BaseBackend):
             self.notifyMessage(message)
 
     def getAllUsers(self):
-        return self.messages.keys()
+        session = db.Session()
+        return [user.username for user in session.query(User)]
 
     def getContacts(self, user):
-        return self.contacts.get(user, [])
+        session = db.Session()
+        user = session.Query(User).filter(User.username == user).one()
+        return user.contacts
 
     def getJIDForUser(self, user):
-        return self.userToJID[user]
+        return '%s@%s' % (user, self.domain)
 
     def getUserHasJID(self, user):
-        return self.userToJID.has_key(user)
+        session = db.Session()
+        return session.query(User).filter(User.username == user).scalar() is None
 
     def getShouldMonitorPresenceFromUser(self, user):
+        # TODO: broken code, add database support
         return self.userPresenceMonitoring[user]
 
     def setShouldMonitorPresenceFromUser(self, user, state):
+        # TODO: broken code, add database support
         self.userPresenceMonitoring[user] = state
 
     def getSubscriberJIDs(self, user):
-        subscribers = []
-        #for subscriber in self.subscribers.get(user, []) + [user]:
-        for subscriber in self.subscribers.get(user, []):
-            if self.userToJID.has_key(subscriber):
-                subscribers.append(self.userToJID[subscriber])
-        return subscribers
+        session = db.Session()
+        user = session.query(User).filter(User.username == user).one()
+
+        return [self.getJIDForUser(s.username) for s in user.subscribers]
 
     def getUserFromJID(self, user):
-        return self.jidToUser.get(user.split('/',1)[0], None)
+        #TODO fetch JID from database when it will be there
+        return user.split('/',1)[0].split('@', 1)[0]
 
     def addContact(self, user, contact):
-        if not self.contacts.has_key(user):
-            self.contacts[user] = []
-        self.contacts.setdefault(user, []).append(contact)
+        session = db.Session()
+        user = session.query(User).filter(User.username == user)
+        contact = session.query(User).filter(User.username == contact)
+
+        user.contacts.append(contact)
+        session.commit()
 
     def registerXMPPUser(self, user, password, fulljid):
         barejid = fulljid.split('/', 1)[0]
-        self.jidToUser[barejid] = user
-        self.userToJID[user] = barejid
+
+        # TODO add code to save JID.
+        session = db.Session()
+        user = User(
+            username = user,
+            password = password,
+            created_at = datetime.datetime.utcnow()
+        )
+        session.add(user)
+        session.commit()
         return True
 
