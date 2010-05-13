@@ -90,4 +90,10 @@ class Bot(object):
 
     def start(self):
         self.xmpp.connect()
-        self.xmpp.process()
+        self.xmpp.process(threaded = False)
+
+    def stop(self):
+        self.xmpp.disconnect()
+        self.xmpp.run = False
+        self.xmpp.eventqueue.put(('quit', None, None))
+        self.xmpp.sendqueue.put(None)

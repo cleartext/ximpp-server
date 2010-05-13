@@ -1,9 +1,11 @@
 #!bin/python
 
+import signal
 import logging
 from backend.simple import Backend
 from frontend import HTTPFrontend
 from bot import Bot
+from pdb import set_trace
 
 import db
 
@@ -21,12 +23,15 @@ def init():
 def main():
     init()
     backend = Backend(domain = 'coolbananas.com.au')
-    component = Bot(
+    bot = Bot(
         jid = "microblog.coolbananas.com.au", password = "cleartext7u$",
         server = "xmpp1.cleartext.im", port = 5349, backend = backend)
-    component.start()
-    httpFrontend = HTTPFrontend(8080, backend)
-    httpFrontend.start()
+
+    bot.start()
+
+    # does not work, because bot running in single threaded mode.
+    #frontend = HTTPFrontend(8080, backend)
+    #frontend.start()
 
 
 if __name__ == '__main__':

@@ -71,4 +71,4 @@ class HTTPFrontend:
         self.server.serve_forever()
 
     def stop(self):
-        self.server.socket.close()
+        self.server.shutdown()
