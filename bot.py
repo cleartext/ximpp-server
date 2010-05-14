@@ -94,6 +94,3 @@ class Bot(object):
 
     def stop(self):
         self.xmpp.disconnect()
-        self.xmpp.run = False
-        self.xmpp.eventqueue.put(('quit', None, None))
-        self.xmpp.sendqueue.put(None)
