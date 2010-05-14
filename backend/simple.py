@@ -73,7 +73,7 @@ class Backend(BaseBackend):
 
     def getUserHasJID(self, user):
         session = db.Session()
-        return session.query(User).filter(User.username == user).scalar() is None
+        return session.query(User).filter(User.username == user).scalar() is not None
 
     def getShouldMonitorPresenceFromUser(self, user):
         # TODO: broken code, add database support
