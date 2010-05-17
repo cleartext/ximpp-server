@@ -21,6 +21,6 @@ class Backend(object):
     def addMessageHandler(self, handler):
         self.handlers.append(handler)
 
-    def notifyMessage(self, message):
+    def notifyMessage(self, message, from_jid):
         for handler in self.handlers:
-            handler(message)
+            handler(message, from_jid)

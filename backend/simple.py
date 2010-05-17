@@ -39,7 +39,7 @@ class Backend(BaseBackend):
             messages += self.messages[user]
 
         session = db.Session()
-        user = session.Query(User).filter(User.username == user).one()
+        user = session.query(User).filter(User.username == user).one()
 
         for contact in user.contacts():
             if self.messages.has_key(contact.username):
@@ -54,11 +54,13 @@ class Backend(BaseBackend):
         else:
             return Message(None, user, '')
 
-    def addMessageFromUser(self, text, user):
-        if len(text) > 0 and self.getLastMessage(user) != text:
-            message = Message(datetime.datetime.today(), user, text)
-            self.messages.setdefault(user,[]).append(message)
-            self.notifyMessage(message)
+    def addMessage(self, text, jid):
+        user = self.getUserFromJID(jid)
+
+        if len(text) > 0:
+            # TODO save message in the database
+            message = Message(datetime.datetime.utcnow(), user, text)
+            self.notifyMessage(message, jid)
 
     def getAllUsers(self):
         session = db.Session()

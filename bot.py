@@ -67,9 +67,12 @@ class Bot(object):
                 self.log.debug('"user %s" has no jid' % user)
 
     def handleIncomingXMPPEvent(self, event):
-        message = event["message"]
-        user = self.backend.getUserFromJID(event["jid"])
-        self.backend.addMessageFromUser(message, user)
+        type_ = event['type']
+        if type_ == 'chat':
+            message = event['body']
+            self.backend.addMessage(message, event['from'].jid)
+        else:
+            self.log.error(ET.tostring(event.xml))
 
     def handleXMPPPresenceProbe(self, event):
         self.xmpp.sendPresence(pto = event["from"])
@@ -81,10 +84,10 @@ class Bot(object):
             self.xmpp.sendPresence(pto = userJID)
             self.xmpp.sendPresenceSubscription(pto=userJID, ptype="subscribe")
 
-    def handleMessageAddedToBackend(self, message):
+    def handleMessageAddedToBackend(self, message, from_jid):
         body = message.user + ": " + message.text
         for subscriberJID in self.backend.getSubscriberJIDs(message.user):
-            self.xmpp.sendMessage(subscriberJID, body)
+            self.xmpp.sendMessage(subscriberJID, body, mfrom = from_jid)
 
     def start(self):
         self.xmpp.connect()
