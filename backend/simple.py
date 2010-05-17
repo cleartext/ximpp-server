@@ -7,6 +7,7 @@ from models import User
 
 from backend.base import Backend as BaseBackend
 from backend.base import Message, message_compare
+from utils import trace_methods
 
 
 class Backend(BaseBackend):
@@ -115,3 +116,4 @@ class Backend(BaseBackend):
         session.commit()
         return True
 
+trace_methods(Backend)

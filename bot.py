@@ -3,6 +3,7 @@ import sleekxmpp.componentxmpp
 
 from xml.etree import cElementTree as ET
 from pdb import set_trace
+from utils import trace_methods
 
 class Bot(object):
     def __init__(self, jid, password, server, port, backend):
@@ -57,8 +58,6 @@ class Bot(object):
 
     ## ...
     def handleXMPPConnected(self, event):
-        self.log.debug('connected')
-
         for user in self.backend.getAllUsers():
             if self.backend.getUserHasJID(user):
                 jid = self.backend.getJIDForUser(user)
@@ -68,7 +67,6 @@ class Bot(object):
                 self.log.debug('"user %s" has no jid' % user)
 
     def handleIncomingXMPPEvent(self, event):
-        self.log.debug('xmpp event: %r' % (event,))
         message = event["message"]
         user = self.backend.getUserFromJID(event["jid"])
         self.backend.addMessageFromUser(message, user)
@@ -94,3 +92,6 @@ class Bot(object):
 
     def stop(self):
         self.xmpp.disconnect()
+
+
+trace_methods(Bot)
