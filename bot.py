@@ -7,6 +7,7 @@ from utils import trace_methods
 
 class Bot(object):
     def __init__(self, jid, password, server, port, backend):
+        self.jid = jid
         self.xmpp = sleekxmpp.componentxmpp.ComponentXMPP(jid, password, server, port)
         self.xmpp.add_event_handler("session_start", self.handleXMPPConnected)
         self.xmpp.add_event_handler("changed_subscription",
@@ -87,7 +88,7 @@ class Bot(object):
     def handleMessageAddedToBackend(self, message, from_jid):
         body = message.user + ": " + message.text
         for subscriberJID in self.backend.getSubscriberJIDs(message.user):
-            self.xmpp.sendMessage(subscriberJID, body, mfrom = from_jid)
+            self.xmpp.sendMessage(subscriberJID, body, mfrom = self.jid, mtype = 'chat')
 
     def start(self):
         self.xmpp.connect()
