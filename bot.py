@@ -65,12 +65,24 @@ def _whoami(bot, event, session = None):
     bot.xmpp.sendMessage(user.jid, body, mfrom = bot.jid, mtype = 'chat')
 
 
+def _direct_message(bot, event, username, message, session = None):
+    user = bot.backend.get_user_by_username(username, session)
+
+    if user:
+        body = 'Direct from @%s: %s' % (username, message)
+        bot.xmpp.sendMessage(user.jid, body, mfrom = bot.jid, mtype = 'chat')
+    else:
+        body = 'User @%s not found.' % username
+        bot.xmpp.sendMessage(event['from'].jid, body, mfrom = bot.jid, mtype = 'chat')
+
+
 _COMMANDS = [
     (r'^ers$', _show_followers),
     (r'^ing$', _show_contacts),
+    (r'^me$', _whoami),
     (r'^u (?P<username>\w+)$', _unfollow),
     (r'^f (?P<username>\w+)$', _follow),
-    (r'^me$', _whoami),
+    (r'^d (?P<username>\w+) (?P<message>.*)$', _direct_message),
 ]
 
 _COMMANDS = [(re.compile(regex), func) for regex, func in _COMMANDS]

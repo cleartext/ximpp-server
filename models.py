@@ -23,3 +23,7 @@ class User(Base):
         primaryjoin = 'User.username == subscribers.c.user',
         secondaryjoin = 'subscribers.c.subscriber == User.username',
     )
+
+    def _get_jid(self):
+        return self.username + '@coolbananas.com.au'
+    jid = property(_get_jid)
