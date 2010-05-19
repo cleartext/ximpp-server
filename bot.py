@@ -38,14 +38,21 @@ def _unfollow(bot, event, username, session = None):
     user = bot.backend.get_user_by_jid(event['from'].jid, session)
     contact = bot.backend.get_user_by_username(username, session)
 
-    if user and contact:
-        for idx, u in enumerate(user.contacts):
-            if u.username == contact.username:
-                user.contacts.pop(idx)
-                session.commit()
-                break
+    if not contact:
+        body = 'User @%s not found.' % username
+        bot.xmpp.sendMessage(event['from'].jid, body, mfrom = bot.jid, mtype = 'chat')
+        return
 
-    bot.xmpp.sendMessage(user.jid, 'done', mfrom = bot.jid, mtype = 'chat')
+    for idx, u in enumerate(user.contacts):
+        if u.username == contact.username:
+            user.contacts.pop(idx)
+            session.commit()
+            bot.xmpp.sendMessage(user.jid, 'done', mfrom = bot.jid, mtype = 'chat')
+            return
+
+    body = 'You don\'t folow @%s' % username
+    bot.xmpp.sendMessage(user.jid, body, mfrom = bot.jid, mtype = 'chat')
+
 
 
 def _follow(bot, event, username, session = None):
