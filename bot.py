@@ -59,11 +59,18 @@ def _follow(bot, event, username, session = None):
     bot.xmpp.sendMessage(user.jid, 'done', mfrom = bot.jid, mtype = 'chat')
 
 
+def _whoami(bot, event, session = None):
+    user = bot.backend.get_user_by_jid(event['from'].jid, session)
+    body = 'Username: %s\nJID: %s' % (user.username, user.jid)
+    bot.xmpp.sendMessage(user.jid, body, mfrom = bot.jid, mtype = 'chat')
+
+
 _COMMANDS = [
     (r'^ers$', _show_followers),
     (r'^ing$', _show_contacts),
     (r'^u (?P<username>\w+)$', _unfollow),
     (r'^f (?P<username>\w+)$', _follow),
+    (r'^me$', _whoami),
 ]
 
 _COMMANDS = [(re.compile(regex), func) for regex, func in _COMMANDS]
