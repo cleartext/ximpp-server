@@ -34,7 +34,7 @@ def _show_contacts(bot, event, session = None):
         bot.xmpp.sendMessage(user.jid, body, mfrom = bot.jid, mtype = 'chat')
 
 
-def _unsubscribe(bot, event, username, session = None):
+def _unfollow(bot, event, username, session = None):
     user = bot.backend.get_user_by_jid(event['from'].jid, session)
     contact = bot.backend.get_user_by_username(username, session)
 
@@ -48,10 +48,22 @@ def _unsubscribe(bot, event, username, session = None):
     bot.xmpp.sendMessage(user.jid, 'done', mfrom = bot.jid, mtype = 'chat')
 
 
+def _follow(bot, event, username, session = None):
+    user = bot.backend.get_user_by_jid(event['from'].jid, session)
+    contact = bot.backend.get_user_by_username(username, session)
+
+    if user and contact:
+        user.contacts.append(contact)
+        session.commit()
+
+    bot.xmpp.sendMessage(user.jid, 'done', mfrom = bot.jid, mtype = 'chat')
+
+
 _COMMANDS = [
     (r'^ers$', _show_followers),
     (r'^ing$', _show_contacts),
-    (r'^u (?P<username>\w+)$', _unsubscribe),
+    (r'^u (?P<username>\w+)$', _unfollow),
+    (r'^f (?P<username>\w+)$', _follow),
 ]
 
 _COMMANDS = [(re.compile(regex), func) for regex, func in _COMMANDS]
