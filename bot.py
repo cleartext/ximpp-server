@@ -95,6 +95,18 @@ class Bot(object):
                     body = 'You have no followers.'
                 self.xmpp.sendMessage(user.jid, body, mfrom = self.jid, mtype = 'chat')
                 return True
+        elif message == 'ing':
+            user = self.backend.get_user_by_jid(event['from'].jid)
+            if user:
+                contacts = list(user.contacts)
+                if contacts:
+                    body = 'You contacts are:\n' + '\n'.join(
+                        f.username for f in contacts
+                    )
+                else:
+                    body = 'You have no contacts.'
+                self.xmpp.sendMessage(user.jid, body, mfrom = self.jid, mtype = 'chat')
+                return True
         return False
 
 
