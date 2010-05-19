@@ -120,10 +120,7 @@ class Backend(BaseBackend):
 
     def get_user_by_jid(self, jid, session = None):
         username = self.getUserFromJID(jid)
-        user = session.query(User).filter(User.username == username).scalar()
-        if user:
-            user.jid = jid
-        return user
+        return session.query(User).filter(User.username == username).scalar()
 
     def get_user_by_username(self, username, session = None):
         return session.query(User).filter(User.username == username).scalar()
