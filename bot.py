@@ -218,10 +218,18 @@ class Bot(object):
             self.xmpp.sendPresence(pto = userJID)
             self.xmpp.sendPresenceSubscription(pto=userJID, ptype="subscribe")
 
-    def handleMessageAddedToBackend(self, message, from_jid):
-        body = message.user + ": " + message.text
+
+    @db_session
+    def handleMessageAddedToBackend(self, message, from_jid, session):
+        body = '@%s: %s' % (message.user, message.text)
         for subscriberJID in self.backend.getSubscriberJIDs(message.user):
             self.xmpp.sendMessage(subscriberJID, body, mfrom = self.jid, mtype = 'chat')
+
+        body = 'Mention by @%s: %s' % (message.user, message.text)
+        for username in re.findall(r'@\w+', message.text):
+            user = self.backend.get_user_by_username(username[1:], session)
+            self.xmpp.sendMessage(user.jid, body, mfrom = self.jid, mtype = 'chat')
+
 
     def start(self):
         self.xmpp.connect()
