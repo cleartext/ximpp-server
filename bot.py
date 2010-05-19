@@ -1,9 +1,45 @@
+import re
 import logging
 import sleekxmpp.componentxmpp
 
 from xml.etree import cElementTree as ET
 from pdb import set_trace
 from utils import trace_methods
+
+
+def _show_followers(bot, event):
+    user = bot.backend.get_user_by_jid(event['from'].jid)
+    if user:
+        followers = list(user.subscribers)
+        if followers:
+            body = 'You followers are:\n' + '\n'.join(
+                f.username for f in followers
+            )
+        else:
+            body = 'You have no followers.'
+        bot.xmpp.sendMessage(user.jid, body, mfrom = bot.jid, mtype = 'chat')
+
+
+def _show_contacts(bot, event):
+    user = bot.backend.get_user_by_jid(event['from'].jid)
+    if user:
+        contacts = list(user.contacts)
+        if contacts:
+            body = 'You contacts are:\n' + '\n'.join(
+                f.username for f in contacts
+            )
+        else:
+            body = 'You have no contacts.'
+        bot.xmpp.sendMessage(user.jid, body, mfrom = bot.jid, mtype = 'chat')
+
+
+_COMMANDS = [
+    (r'^ers$', _show_followers),
+    (r'^ing$', _show_contacts),
+]
+
+_COMMANDS = [(re.compile(regex), func) for regex, func in _COMMANDS]
+
 
 class Bot(object):
     def __init__(self, jid, password, server, port, backend):
@@ -83,30 +119,12 @@ class Bot(object):
             otherwise, method returns False.
         """
         message = event['body']
-        if message == 'ers':
-            user = self.backend.get_user_by_jid(event['from'].jid)
-            if user:
-                followers = list(user.subscribers)
-                if followers:
-                    body = 'You followers are:\n' + '\n'.join(
-                        f.username for f in followers
-                    )
-                else:
-                    body = 'You have no followers.'
-                self.xmpp.sendMessage(user.jid, body, mfrom = self.jid, mtype = 'chat')
+
+        for regex, func in _COMMANDS:
+            if regex.match(message) is not None:
+                func(self, event)
                 return True
-        elif message == 'ing':
-            user = self.backend.get_user_by_jid(event['from'].jid)
-            if user:
-                contacts = list(user.contacts)
-                if contacts:
-                    body = 'You contacts are:\n' + '\n'.join(
-                        f.username for f in contacts
-                    )
-                else:
-                    body = 'You have no contacts.'
-                self.xmpp.sendMessage(user.jid, body, mfrom = self.jid, mtype = 'chat')
-                return True
+
         return False
 
 
