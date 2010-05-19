@@ -5,10 +5,11 @@ import sleekxmpp.componentxmpp
 from xml.etree import cElementTree as ET
 from pdb import set_trace
 from utils import trace_methods
+from db import db_session
 
 
-def _show_followers(bot, event):
-    user = bot.backend.get_user_by_jid(event['from'].jid)
+def _show_followers(bot, event, session = None):
+    user = bot.backend.get_user_by_jid(event['from'].jid, session)
     if user:
         followers = list(user.subscribers)
         if followers:
@@ -20,8 +21,8 @@ def _show_followers(bot, event):
         bot.xmpp.sendMessage(user.jid, body, mfrom = bot.jid, mtype = 'chat')
 
 
-def _show_contacts(bot, event):
-    user = bot.backend.get_user_by_jid(event['from'].jid)
+def _show_contacts(bot, event, session = None):
+    user = bot.backend.get_user_by_jid(event['from'].jid, session)
     if user:
         contacts = list(user.contacts)
         if contacts:
@@ -33,9 +34,24 @@ def _show_contacts(bot, event):
         bot.xmpp.sendMessage(user.jid, body, mfrom = bot.jid, mtype = 'chat')
 
 
+def _unsubscribe(bot, event, username, session = None):
+    user = bot.backend.get_user_by_jid(event['from'].jid, session)
+    contact = bot.backend.get_user_by_username(username, session)
+
+    if user and contact:
+        for idx, u in enumerate(user.contacts):
+            if u.username == contact.username:
+                user.contacts.pop(idx)
+                session.commit()
+                break
+
+    bot.xmpp.sendMessage(user.jid, 'done', mfrom = bot.jid, mtype = 'chat')
+
+
 _COMMANDS = [
     (r'^ers$', _show_followers),
     (r'^ing$', _show_contacts),
+    (r'^u (?P<username>\w+)$', _unsubscribe),
 ]
 
 _COMMANDS = [(re.compile(regex), func) for regex, func in _COMMANDS]
@@ -103,17 +119,19 @@ class Bot(object):
             else:
                 self.log.debug('"user %s" has no jid' % user)
 
-    def handleIncomingXMPPEvent(self, event):
+    @db_session
+    def handleIncomingXMPPEvent(self, event, session = None):
         type_ = event['type']
+
         if type_ == 'chat':
-            if self._handle_commands(event) == False:
+            if self._handle_commands(event, session) == False:
                 message = event['body']
                 self.backend.addMessage(message, event['from'].jid)
         else:
             self.log.error(ET.tostring(event.xml))
 
 
-    def _handle_commands(self, event):
+    def _handle_commands(self, event, session):
         """ Checks if event contains controls sequence.
             If it is, then True returned and command is processed,
             otherwise, method returns False.
@@ -121,8 +139,9 @@ class Bot(object):
         message = event['body']
 
         for regex, func in _COMMANDS:
-            if regex.match(message) is not None:
-                func(self, event)
+            match = regex.match(message)
+            if match is not None:
+                func(self, event, session = session, **match.groupdict())
                 return True
 
         return False

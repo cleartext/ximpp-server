@@ -118,12 +118,14 @@ class Backend(BaseBackend):
         session.commit()
         return True
 
-    def get_user_by_jid(self, jid):
-        session = db.Session()
+    def get_user_by_jid(self, jid, session = None):
         username = self.getUserFromJID(jid)
         user = session.query(User).filter(User.username == username).scalar()
         if user:
             user.jid = jid
         return user
+
+    def get_user_by_username(self, username, session = None):
+        return session.query(User).filter(User.username == username).scalar()
 
 trace_methods(Backend)
