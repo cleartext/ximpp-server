@@ -70,10 +70,33 @@ class Bot(object):
     def handleIncomingXMPPEvent(self, event):
         type_ = event['type']
         if type_ == 'chat':
-            message = event['body']
-            self.backend.addMessage(message, event['from'].jid)
+            if self._handle_commands(event) == False:
+                message = event['body']
+                self.backend.addMessage(message, event['from'].jid)
         else:
             self.log.error(ET.tostring(event.xml))
+
+
+    def _handle_commands(self, event):
+        """ Checks if event contains controls sequence.
+            If it is, then True returned and command is processed,
+            otherwise, method returns False.
+        """
+        message = event['body']
+        if message == 'ers':
+            user = self.backend.get_user_by_jid(event['from'].jid)
+            if user:
+                followers = list(user.subscribers)
+                if followers:
+                    body = 'You followers are:\n' + '\n'.join(
+                        f.username for f in followers
+                    )
+                else:
+                    body = 'You have no followers.'
+                self.xmpp.sendMessage(user.jid, body, mfrom = self.jid, mtype = 'chat')
+                return True
+        return False
+
 
     def handleXMPPPresenceProbe(self, event):
         self.xmpp.sendPresence(pto = event["from"])
