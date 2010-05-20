@@ -119,7 +119,7 @@ _COMMANDS = [(re.compile(regex), func) for regex, func in _COMMANDS]
 
 
 class Bot(object):
-    def __init__(self, jid, password, server, port, backend):
+    def __init__(self, jid, password, server, port, backend, debug = False):
         self.jid = jid
         self.xmpp = sleekxmpp.componentxmpp.ComponentXMPP(jid, password, server, port)
         self.xmpp.add_event_handler("session_start", self.handleXMPPConnected)
@@ -140,6 +140,7 @@ class Bot(object):
             "<query xmlns='jabber:iq:register'/></iq>", self.handleRegistrationRequest)
         ## END NEW
         self.log = logging.getLogger('bot')
+        self.debug = debug
 
     ## BEGIN NEW
     def handleRegistrationFormRequest(self, request):
@@ -182,14 +183,20 @@ class Bot(object):
 
     @db_session
     def handleIncomingXMPPEvent(self, event, session = None):
-        type_ = event['type']
+        try:
+            type_ = event['type']
 
-        if type_ == 'chat':
-            if self._handle_commands(event, session) == False:
-                message = event['body']
-                self.backend.addMessage(message, event['from'].jid)
-        else:
-            self.log.error(ET.tostring(event.xml))
+            if type_ == 'chat':
+                if self._handle_commands(event, session) == False:
+                    message = event['body']
+                    self.backend.addMessage(message, event['from'].jid)
+            else:
+                self.log.error(ET.tostring(event.xml))
+        except Exception, e:
+            self.log.exception('error during XMPP event processing')
+            if self.debug:
+                body = 'ERROR: %s' % e
+                self.xmpp.sendMessage(event['from'].jid, body, mfrom = self.jid, mtype = 'chat')
 
 
     def _handle_commands(self, event, session):

@@ -25,7 +25,9 @@ def main():
     backend = Backend(domain = 'coolbananas.com.au')
     bot = Bot(
         jid = "microblog.coolbananas.com.au", password = "cleartext7u$",
-        server = "xmpp1.cleartext.im", port = 5349, backend = backend)
+        server = "xmpp1.cleartext.im", port = 5349, backend = backend,
+        debug = True,
+    )
 
     bot.start()
 
