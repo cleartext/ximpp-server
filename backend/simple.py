@@ -104,20 +104,6 @@ class Backend(BaseBackend):
         user.contacts.append(contact)
         session.commit()
 
-    def registerXMPPUser(self, user, password, fulljid):
-        barejid = fulljid.split('/', 1)[0]
-
-        # TODO add code to save JID.
-        session = db.Session()
-        user = User(
-            username = user,
-            password = password,
-            created_at = datetime.datetime.utcnow()
-        )
-        session.add(user)
-        session.commit()
-        return True
-
     def get_user_by_jid(self, jid, session = None):
         username = self.getUserFromJID(jid)
         return session.query(User).filter(User.username == username).scalar()
