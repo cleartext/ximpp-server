@@ -14,6 +14,11 @@ logging.basicConfig(
     level = logging.DEBUG,
     format = '%(levelname)-8s %(message)s'
 )
+root = logging.getLogger()
+handler = logging.FileHandler('debug.log')
+fmt =  logging.Formatter('%(asctime)s %(process)s/%(thread)s %(levelname)s %(name)s %(filename)s:%(lineno)s %(message)s')
+handler.setFormatter(fmt)
+root.addHandler(handler)
 
 def init():
     db.init('mysql://root:cleartext.netgeDiM76A5@localhost/coolbananas_com_au')
