@@ -182,11 +182,11 @@ class Bot(object):
 
 
     def handleXMPPPresenceProbe(self, event):
-        self.xmpp.sendPresence(pto = event["from"])
+        self.xmpp.sendPresence(pto = event["from"].jid)
 
     def handleXMPPPresenceSubscription(self, subscription):
         if subscription["type"] == "subscribe":
-            userJID = subscription["from"]
+            userJID = subscription["from"].jid
             self.xmpp.sendPresenceSubscription(pto=userJID, ptype="subscribed")
             self.xmpp.sendPresence(pto = userJID)
             self.xmpp.sendPresenceSubscription(pto=userJID, ptype="subscribe")
