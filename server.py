@@ -2,6 +2,8 @@
 
 import signal
 import logging
+import yaml
+
 from backend.simple import Backend
 from frontend import HTTPFrontend
 from bot import Bot
@@ -20,19 +22,21 @@ fmt =  logging.Formatter('%(asctime)s %(process)s/%(thread)s %(levelname)s %(nam
 handler.setFormatter(fmt)
 root.addHandler(handler)
 
-def init():
-    db.init('mysql://root:cleartext.netgeDiM76A5@localhost/coolbananas_com_au')
+def init(cfg):
+    db.init('mysql://%(username)s:%(password)s@%(host)s/%(dbname)s' % cfg['database'])
 
 
 
 def main():
-    init()
+    if len(sys.argv) != 2:
+        print 'Usage: %s config.cfg' % sys.argv[0]
+        sys.exit(1)
+
+    cfg = yaml.load(open(sys.argv[1]).read())
+
+    init(cfg)
     backend = Backend(domain = 'coolbananas.com.au')
-    bot = Bot(
-        jid = "microblog.coolbananas.com.au", password = "cleartext7u$",
-        server = "xmpp1.cleartext.im", port = 5349, backend = backend,
-        debug = True,
-    )
+    bot = Bot(backend = backend, **cfg['component'])
 
     bot.start()
 

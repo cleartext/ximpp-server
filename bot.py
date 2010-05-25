@@ -119,7 +119,7 @@ _COMMANDS = [(re.compile(regex), func) for regex, func in _COMMANDS]
 
 
 class Bot(object):
-    def __init__(self, jid, password, server, port, backend, debug = False):
+    def __init__(self, jid, password, server, port, backend = None, debug = False):
         self.jid = jid
         self.xmpp = sleekxmpp.componentxmpp.ComponentXMPP(jid, password, server, port)
         self.xmpp.add_event_handler("session_start", self.handleXMPPConnected)
