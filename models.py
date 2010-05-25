@@ -1,5 +1,6 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Unicode, UnicodeText, DateTime, Table, ForeignKey
+from sqlalchemy import Column, Unicode, UnicodeText, \
+                       DateTime, Table, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
@@ -15,6 +16,8 @@ class User(Base):
     username = Column(Unicode, primary_key = True)
     password = Column(UnicodeText)
     created_at = Column(DateTime)
+    jid = Column(Unicode, unique = True)
+    presence = Column(Boolean)
 
     subscribers = relationship(
         'User',
@@ -24,6 +27,10 @@ class User(Base):
         secondaryjoin = 'subscribers.c.subscriber == User.username',
     )
 
-    def _get_jid(self):
-        return self.username + '@coolbananas.com.au'
-    jid = property(_get_jid)
+
+class Message(object):
+    def __init__(self, date, user, text):
+        self.date = date
+        self.user = user
+        self.text = text
+

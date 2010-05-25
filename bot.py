@@ -1,5 +1,6 @@
 import re
 import logging
+import datetime
 import sleekxmpp.componentxmpp
 
 from xml.etree import cElementTree as ET
@@ -7,7 +8,7 @@ from pdb import set_trace
 
 from utils import trace_methods
 from db import db_session
-from models import User
+from models import User, Message
 
 
 class Commands(object):
@@ -149,8 +150,8 @@ class DBHelpers(object):
         return session.query(User)
 
     def get_user_by_jid(self, jid, session):
-        username = jid.split('/',1)[0].split('@', 1)[0]
-        return session.query(User).filter(User.username == username).scalar()
+        jid = jid.split('/', 1)[0]
+        return session.query(User).filter(User.jid == jid).scalar()
 
     def get_user_by_username(self, username, session):
         return session.query(User).filter(User.username == username).scalar()
