@@ -62,10 +62,6 @@ class Backend(BaseBackend):
             message = Message(datetime.datetime.utcnow(), user, text)
             self.notifyMessage(message, jid)
 
-    def getAllUsers(self):
-        session = db.Session()
-        return [user.username for user in session.query(User)]
-
     def getContacts(self, user):
         session = db.Session()
         user = session.Query(User).filter(User.username == user).one()
