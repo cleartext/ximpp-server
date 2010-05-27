@@ -188,10 +188,7 @@ class Bot(Commands, DBHelpers):
 
             if type_ == 'chat':
                 if self._handle_commands(event, session) == False:
-                    text = event['body']
-                    user = self.get_user_by_jid(event['from'].jid, session)
-                    message = Message(datetime.datetime.utcnow(), user, text)
-                    self.handle_new_message(message, session)
+                    self.handle_new_message(event, session)
             else:
                 self.log.error(ET.tostring(event.xml))
         except Exception, e:
@@ -212,15 +209,31 @@ class Bot(Commands, DBHelpers):
             self.xmpp.sendPresenceSubscription(pto=userJID, ptype="subscribe")
 
 
-    def handle_new_message(self, message, session):
-        body = '@%s: %s' % (message.user.username, message.text)
-        for subscriber in message.user.subscribers:
-            self.xmpp.sendMessage(subscriber.jid, body, mfrom = self.jid, mtype = 'chat')
+    def handle_new_message(self, event, session):
+        text = event['body']
+        user = self.get_user_by_jid(event['from'].jid, session)
 
-        body = 'Mention by @%s: %s' % (message.user.username, message.text)
-        for username in re.findall(r'@\w+', message.text):
+        payload = filter(lambda x: x.tag.endswith('}x'), event.getPayload())
+
+        body = '@%s: %s' % (user.username, text)
+        for subscriber in user.subscribers:
+            self.send_message(subscriber.jid, body, mfrom = self.jid, mtype = 'chat', payload = payload)
+
+        body = 'Mention by @%s: %s' % (user.username, text)
+        for username in re.findall(r'@\w+', text):
             user = self.get_user_by_username(username[1:], session)
-            self.xmpp.sendMessage(user.jid, body, mfrom = self.jid, mtype = 'chat')
+            self.send_message(user.jid, body, mfrom = self.jid, mtype = 'chat', payload = payload)
+
+
+    def send_message(self, mto, mbody,
+            msubject = None, mtype = None, mhtml = None,
+            mfrom = None, mnick = None, payload = []):
+
+        msg = self.xmpp.makeMessage(mto,mbody,msubject,mtype,mhtml,mfrom,mnick)
+        for item in payload:
+            msg.setPayload(item)
+        self.xmpp.send(msg)
+
 
     def start(self):
         self.xmpp.connect()
