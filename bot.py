@@ -138,22 +138,31 @@ class Commands(object):
         self.xmpp.sendMessage(user.jid, body, mfrom = self.jid, mtype = 'chat')
 
 
+    def _show_help(self, event, session = None):
+        user = self.get_user_by_jid(event['from'].jid, session)
+
+        self.xmpp.sendMessage(user.jid, self._COMMANDS_HELP, mfrom = self.jid, mtype = 'chat')
 
 
     _COMMANDS = [
-        (r'^ers$', _show_followers),
-        (r'^ing$', _show_contacts),
-        (r'^me$', _whoami),
-        (r'^u (?P<username>\w+)$', _unfollow),
-        (r'^f (?P<username>\w+)$', _follow),
-        (r'^d (?P<username>\w+) (?P<message>.*)$', _direct_message),
-        (r'^@(?P<username>\w+) (?P<message>.*)$', _reply_message),
-        (r'^s$', _show_searches),
-        (r'^s (?P<word>\w+)$', _add_search),
-        (r'^us (?P<word>\w+)$', _remove_search),
+        (r'^me$', _whoami, '"me" - shows who you are, your username and jid'),
+        (r'^ers$', _show_followers, '"ers" - shows your followers'),
+        (r'^ing$', _show_contacts, '"ing" - shows who you follow'),
+        (r'^f (?P<username>\w+)$', _follow, '"f some_username" - follow this user'),
+        (r'^u (?P<username>\w+)$', _unfollow, '"u some_username" - unfollow this user'),
+        (r'^d (?P<username>\w+) (?P<message>.*)$', _direct_message, '"d some_username message text" - send direct message to the user'),
+        (r'^@(?P<username>\w+) (?P<message>.*)$', _reply_message, '"@username message text" - same as direct message'),
+        (r'^s$', _show_searches, '"s" - show saved searches'),
+        (r'^s (?P<word>\w+)$', _add_search, '"s word" - save live search term'),
+        (r'^us (?P<word>\w+)$', _remove_search, '"us word" - delete live search term'),
+        (r'^help$', _show_help, '"help" - show this help'),
     ]
 
-    _COMMANDS = [(re.compile(regex), func) for regex, func in _COMMANDS]
+    _COMMANDS_HELP = 'Commands:\n  ' + '\n  '.join(
+        help for regex, func, help in _COMMANDS
+    )
+
+    _COMMANDS = [(re.compile(regex), func, help) for regex, func, help in _COMMANDS]
 
 
     def _handle_commands(self, event, session):
@@ -163,7 +172,7 @@ class Commands(object):
         """
         message = event['body']
 
-        for regex, func in self._COMMANDS:
+        for regex, func, help in self._COMMANDS:
             match = regex.match(message)
             if match is not None:
                 func(self, event, session = session, **match.groupdict())
