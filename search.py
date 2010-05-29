@@ -4,16 +4,45 @@ from collections import defaultdict
 import logging
 import db
 
-_searches = defaultdict(list)
+from sqlalchemy.orm.exc import NoResultFound
+
+from models import SearchTerm
+
+_searches = defaultdict(set)
 _queue = Queue()
 
 class Sentinel(object): pass
 
 
 def add_search(word, username):
+    word = word.lower()
+
     log = logging.getLogger('search')
     log.debug('New search term "%s" for username "%s"' % (word, username))
-    _searches[word.lower()].append(username)
+    _searches[word].add(username)
+
+    session = db.Session()
+    session.add(SearchTerm(word, username))
+    session.commit()
+
+
+def remove_search(word, username):
+    word = word.lower()
+
+    log = logging.getLogger('search')
+    log.debug('Removing search term "%s" for username "%s"' % (word, username))
+    _searches[word].discard(username)
+
+    session = db.Session()
+    try:
+        term = session.query(SearchTerm).filter(SearchTerm.term == word).filter(
+            SearchTerm.username == username
+        ).one()
+    except NoResultFound:
+        return
+
+    session.delete(term)
+    session.commit()
 
 
 def process_message(event):
@@ -30,6 +59,15 @@ def stop():
 
 def start(bot):
     log = logging.getLogger('search')
+
+    log.debug('Loading search terms.')
+
+    session = db.Session()
+    count = 0
+    for term in session.query(SearchTerm).all():
+        _searches[term.term].add(term.username)
+        count += 1
+    log.debug('%d terms were loaded' % count)
 
     def _worker():
         log.debug('Starting search thread.')

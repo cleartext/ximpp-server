@@ -8,7 +8,7 @@ from pdb import set_trace
 
 from utils import trace_methods
 from db import db_session
-from models import User, Message
+from models import User, Message, SearchTerm
 
 import search
 
@@ -113,10 +113,30 @@ class Commands(object):
             self.xmpp.sendMessage(from_.jid, body, mfrom = self.jid, mtype = 'chat')
 
 
-    def _search(self, event, word, session = None):
+    def _add_search(self, event, word, session = None):
         user = self.get_user_by_jid(event['from'].jid, session)
         search.add_search(word, user.username)
-        self.xmpp.sendMessage(user.jid, 'done', mfrom = self.jid, mtype = 'chat')
+        self.xmpp.sendMessage(user.jid, 'Now you are looking for "%s" in all messages' % word, mfrom = self.jid, mtype = 'chat')
+
+
+    def _remove_search(self, event, word, session = None):
+        user = self.get_user_by_jid(event['from'].jid, session)
+        search.remove_search(word, user.username)
+        self.xmpp.sendMessage(user.jid, 'Search on "%s" was dropped' % word, mfrom = self.jid, mtype = 'chat')
+
+
+    def _show_searches(self, event, session = None):
+        user = self.get_user_by_jid(event['from'].jid, session)
+        terms = session.query(SearchTerm).filter(SearchTerm.username == user.username)
+
+        if terms.count() > 0:
+            body = 'You searches:\n' + '\n'.join(
+                t.term for t in terms
+            )
+        else:
+            body = 'You have no searches.'
+        self.xmpp.sendMessage(user.jid, body, mfrom = self.jid, mtype = 'chat')
+
 
 
 
@@ -128,7 +148,9 @@ class Commands(object):
         (r'^f (?P<username>\w+)$', _follow),
         (r'^d (?P<username>\w+) (?P<message>.*)$', _direct_message),
         (r'^@(?P<username>\w+) (?P<message>.*)$', _reply_message),
-        (r'^s (?P<word>\w+)$', _search),
+        (r'^s$', _show_searches),
+        (r'^s (?P<word>\w+)$', _add_search),
+        (r'^us (?P<word>\w+)$', _remove_search),
     ]
 
     _COMMANDS = [(re.compile(regex), func) for regex, func in _COMMANDS]

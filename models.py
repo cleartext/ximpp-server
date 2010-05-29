@@ -28,6 +28,16 @@ class User(Base):
     )
 
 
+class SearchTerm(Base):
+    __tablename__ = 'search_terms'
+    term = Column(Unicode, primary_key = True)
+    username = Column(Unicode, primary_key = True)
+
+    def __init__(self, term, username):
+        self.term = term
+        self.username = username
+
+
 class Message(object):
     def __init__(self, date, user, text):
         self.date = date
