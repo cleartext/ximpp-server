@@ -14,7 +14,7 @@ def init(cfg):
     # Init logging
     logging.basicConfig(
         level = logging.DEBUG,
-        format = '%(levelname)-8s %(message)s'
+        format = '%(levelname)-8s %(name)-8s %(message)s'
     )
     root = logging.getLogger()
     handler = logging.FileHandler('debug.log')

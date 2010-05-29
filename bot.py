@@ -10,6 +10,7 @@ from utils import trace_methods
 from db import db_session
 from models import User, Message
 
+import search
 
 class Commands(object):
     """
@@ -112,6 +113,13 @@ class Commands(object):
             self.xmpp.sendMessage(from_.jid, body, mfrom = self.jid, mtype = 'chat')
 
 
+    def _search(self, event, word, session = None):
+        user = self.get_user_by_jid(event['from'].jid, session)
+        search.add_search(word, user.username)
+        self.xmpp.sendMessage(user.jid, 'done', mfrom = self.jid, mtype = 'chat')
+
+
+
     _COMMANDS = [
         (r'^ers$', _show_followers),
         (r'^ing$', _show_contacts),
@@ -120,6 +128,7 @@ class Commands(object):
         (r'^f (?P<username>\w+)$', _follow),
         (r'^d (?P<username>\w+) (?P<message>.*)$', _direct_message),
         (r'^@(?P<username>\w+) (?P<message>.*)$', _reply_message),
+        (r'^s (?P<word>\w+)$', _search),
     ]
 
     _COMMANDS = [(re.compile(regex), func) for regex, func in _COMMANDS]
@@ -157,10 +166,23 @@ class DBHelpers(object):
         return session.query(User).filter(User.username == username).scalar()
 
 
+
+class ComponentXMPP(sleekxmpp.componentxmpp.ComponentXMPP):
+    """ Wrapper around sleekxmpp's component.
+        Used to stop all threads on disconnect.
+    """
+
+    def disconnect(self, reconnect = False):
+        super(ComponentXMPP, self).disconnect(reconnect)
+        if not reconnect:
+            search.stop()
+
+
+
 class Bot(Commands, DBHelpers):
     def __init__(self, jid, password, server, port, debug = False):
         self.jid = jid
-        self.xmpp = sleekxmpp.componentxmpp.ComponentXMPP(jid, password, server, port)
+        self.xmpp = ComponentXMPP(jid, password, server, port)
         self.xmpp.add_event_handler("session_start", self.handleXMPPConnected)
         self.xmpp.add_event_handler("changed_subscription",
                 self.handleXMPPPresenceSubscription)
@@ -173,6 +195,8 @@ class Bot(Commands, DBHelpers):
         ## END NEW
         self.log = logging.getLogger('bot')
         self.debug = debug
+
+        search.start(self)
 
 
     @db_session
@@ -189,6 +213,7 @@ class Bot(Commands, DBHelpers):
             if type_ == 'chat':
                 if self._handle_commands(event, session) == False:
                     self.handle_new_message(event, session)
+                    search.process_message(event)
             else:
                 self.log.error(ET.tostring(event.xml))
         except Exception, e:
@@ -208,12 +233,15 @@ class Bot(Commands, DBHelpers):
             self.xmpp.sendPresence(pto = userJID)
             self.xmpp.sendPresenceSubscription(pto=userJID, ptype="subscribe")
 
+    def _extract_payload(self, event):
+        return filter(lambda x: x.tag.endswith('}x'), event.getPayload())
+
 
     def handle_new_message(self, event, session):
         text = event['body']
         user = self.get_user_by_jid(event['from'].jid, session)
 
-        payload = filter(lambda x: x.tag.endswith('}x'), event.getPayload())
+        payload = self._extract_payload(event)
 
         body = '@%s: %s' % (user.username, text)
         for subscriber in user.subscribers:
@@ -240,6 +268,7 @@ class Bot(Commands, DBHelpers):
         self.xmpp.process(threaded = False)
 
     def stop(self):
+        search.stop()
         self.xmpp.disconnect()
 
 
