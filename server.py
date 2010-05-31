@@ -23,7 +23,7 @@ def init(cfg):
     root.addHandler(handler)
 
     # Init database
-    db.init('mysql://%(username)s:%(password)s@%(host)s/%(dbname)s' % cfg['database'])
+    db.init(cfg['database'])
 
 
 def main():

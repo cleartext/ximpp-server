@@ -23,16 +23,23 @@ class DebugListener(PoolListener):
 
 
 
-def init(database_uri):
-    """ This function should be called before Session use. """
-    engine = create_engine(
-        database_uri,
-        pool_recycle = 3600,
-        pool_size = 5,
-        max_overflow = 0,
-        echo = True,
-        listeners = [DebugListener()],
+def init(cfg):
+    """ This function should be called before Session use.
+        Input is a dict like object with databases settings from the config.
+    """
+    database_uri = 'mysql://%(username)s:%(password)s@%(host)s/%(dbname)s' % cfg
+
+    opts = dict(
+        pool_recycle = cfg.get('pool_recycle', 3600),
+        pool_size = cfg.get('pool_size', 5),
+        max_overflow = cfg.get('max_overflow', 0),
     )
+
+    if opts.get('debug', False):
+        opts['echo'] = True
+        opts['listeners'] = [DebugListener()]
+
+    engine = create_engine(database_uri, **opts)
     Session.configure(bind = engine)
 
 
