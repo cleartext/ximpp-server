@@ -6,7 +6,7 @@ Session = sessionmaker()
 
 def init(database_uri):
     """ This function should be called before Session use. """
-    engine = create_engine(database_uri)
+    engine = create_engine(database_uri, pool_recycle = 3600)
     Session.configure(bind = engine)
 
 def db_session(func):
