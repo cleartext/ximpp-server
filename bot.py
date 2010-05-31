@@ -246,7 +246,7 @@ class Bot(Commands, DBHelpers):
                     self.handle_new_message(event, session)
                     search.process_message(event)
             else:
-                self.log.error(ET.tostring(event.xml))
+                self.log.error('unknown event type "%s":\n%s' % (type_, ET.tostring(event.xml)))
         except Exception, e:
             self.log.exception('error during XMPP event processing')
             if self.debug:
