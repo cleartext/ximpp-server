@@ -1,6 +1,14 @@
+XiMPP Microblogging Server - Based on the CheshiR MicroBlogging Platform (see notes below)
+
+- Added MySQL backend (and merged with main code)
+- Follow, unfollow, followers and following commands
+- Added search add, delete and list
+ 
+--
+
 The CheshiR MicroBlogging Platform
 ----------------------------------
-This code is described in Chapter 14 of the book.
+This code is described in Chapter 14 of the book. XMPP: The Definitive Guide
 
 The chapter is divided into different sprints, and each of the sprints can
 be run as separate scripts:
