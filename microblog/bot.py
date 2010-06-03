@@ -3,14 +3,13 @@ import logging
 import datetime
 import sleekxmpp.componentxmpp
 
-from xml.etree import cElementTree as ET
+from microblog import search
+from microblog.db import db_session
+from microblog.models import User, Message, SearchTerm
+from microblog.utils import trace_methods
 from pdb import set_trace
+from xml.etree import cElementTree as ET
 
-from utils import trace_methods
-from db import db_session
-from models import User, Message, SearchTerm
-
-import search
 
 class Commands(object):
     """

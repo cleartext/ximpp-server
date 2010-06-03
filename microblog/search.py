@@ -1,12 +1,11 @@
 import threading
+import logging
+
 from Queue import Queue
 from collections import defaultdict
-import logging
-from db import db_session
-
+from microblog.db import db_session
+from microblog.models import SearchTerm
 from sqlalchemy.orm.exc import NoResultFound
-
-from models import SearchTerm
 
 _searches = defaultdict(set)
 _queue = Queue()

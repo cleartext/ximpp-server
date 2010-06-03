@@ -1,14 +1,16 @@
 #!bin/python
 
-import signal
 import logging
+import signal
+import sys
 import yaml
 
-from frontend import HTTPFrontend
-from bot import Bot
+from microblog import db
+from microblog.bot import Bot
+from microblog.frontend import HTTPFrontend
+
 from pdb import set_trace
 
-import db
 
 def init(cfg):
     # Init logging
