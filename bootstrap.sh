@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BASE=$(readlink -f $(dirname $0))
-VERBOSITY=-v
+VERBOSITY=-vv
 
 if [ ! -d "$BASE/python" ]; then
     echo ================================
