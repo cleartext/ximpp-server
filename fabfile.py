@@ -14,7 +14,9 @@ def mblog():
 
 def deploy():
     sudo('apt-get --yes install python2.5')
+    sudo('apt-get --yes install python2.5-dev')
     sudo('apt-get --yes install libssl-dev')
+
     _pull_sources()
     _update_buildout()
     # TODO: restart service

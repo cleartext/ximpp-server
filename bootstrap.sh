@@ -8,8 +8,10 @@ if [ ! -d "$BASE/python/bin" ]; then
     echo Creating buildout for python
     echo ================================
 
-    mkdir "$BASE/python"
-    ln -s "$BASE/configs/buildout/buildout_python.cfg" "$BASE/python/buildout.cfg"
+    if [ ! -d "$BASE/python" ]; then
+        mkdir "$BASE/python"
+        ln -s "$BASE/configs/buildout/buildout_python.cfg" "$BASE/python/buildout.cfg"
+    fi
     /usr/bin/python2.5 "$BASE/bootstrap.py" --distribute -c "$BASE/python/buildout.cfg"
 
     if [ ! -d "$BASE/python/bin" ]; then
@@ -29,8 +31,10 @@ if [ ! -d "$BASE/env/bin" ]; then
     echo Creating buildout for bot
     echo ================================
 
-    mkdir "$BASE/env"
-    ln -s "$BASE/configs/buildout/buildout.cfg" "$BASE/env/buildout.cfg"
+    if [ ! -d "$BASE/env" ]; then
+        mkdir "$BASE/env"
+        ln -s "$BASE/configs/buildout/buildout.cfg" "$BASE/env/buildout.cfg"
+    fi
     "$BASE/python/bin/python" "$BASE/bootstrap.py" --distribute -c "$BASE/env/buildout.cfg"
 
     if [ ! -d "$BASE/python/bin" ]; then
