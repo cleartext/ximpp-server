@@ -3,7 +3,7 @@
 BASE=$(readlink -f $(dirname $0))
 VERBOSITY=-vv
 
-if [ ! -d "$BASE/python" ]; then
+if [ ! -d "$BASE/python/bin" ]; then
     echo ================================
     echo Creating buildout for python
     echo ================================
@@ -11,6 +11,11 @@ if [ ! -d "$BASE/python" ]; then
     mkdir "$BASE/python"
     ln -s "$BASE/configs/buildout/buildout_python.cfg" "$BASE/python/buildout.cfg"
     /usr/bin/python2.5 "$BASE/bootstrap.py" --distribute -c "$BASE/python/buildout.cfg"
+
+    if [ ! -d "$BASE/python/bin" ]; then
+        echo "Unable to create buildout for python."
+        exit 1
+    fi
 fi
 
 echo ================================
@@ -19,7 +24,7 @@ echo ================================
 "$BASE/python/bin/buildout" $VERBOSITY -c "$BASE/python/buildout.cfg"
 
 
-if [ ! -d "$BASE/env" ]; then
+if [ ! -d "$BASE/env/bin" ]; then
     echo ================================
     echo Creating buildout for bot
     echo ================================
@@ -27,6 +32,11 @@ if [ ! -d "$BASE/env" ]; then
     mkdir "$BASE/env"
     ln -s "$BASE/configs/buildout/buildout.cfg" "$BASE/env/buildout.cfg"
     "$BASE/python/bin/python" "$BASE/bootstrap.py" --distribute -c "$BASE/env/buildout.cfg"
+
+    if [ ! -d "$BASE/python/bin" ]; then
+        echo "Unable to create buildout for bot."
+        exit 1
+    fi
 fi
 
 echo ================================
