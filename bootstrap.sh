@@ -10,7 +10,7 @@ if [ ! -d "$BASE/python" ]; then
 
     mkdir "$BASE/python"
     ln -s "$BASE/configs/buildout/buildout_python.cfg" "$BASE/python/buildout.cfg"
-    python "$BASE/bootstrap.py" --distribute -c "$BASE/python/buildout.cfg"
+    /usr/bin/python2.5 "$BASE/bootstrap.py" --distribute -c "$BASE/python/buildout.cfg"
 fi
 
 echo ================================

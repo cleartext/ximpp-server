@@ -1,13 +1,24 @@
 import os.path
-from fabric.api import run, env, settings, cd
+from fabric.api import run, env, settings, cd, sudo
 
 env.install_path = '/home/admin/opt'
 
+
+def localhost():
+    env.hosts = ['localhost']
+
+
+def mblog():
+    env.hosts = ['mblog.cleartext.com']
+
+
 def deploy():
-    # TODO: update or install environment buildout with python
+    sudo('apt-get install python2.5')
+    sudo('apt-get install libssl-dev')
     _pull_sources()
     _update_buildout()
     # TODO: restart service
+
 
 def _pull_sources():
     run('mkdir -p %(install_path)s' % env)
@@ -22,3 +33,4 @@ def _pull_sources():
 def _update_buildout():
     with cd(os.path.join(env.install_path, 'ximpp-server')):
         run('./bootstrap.sh')
+
