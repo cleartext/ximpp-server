@@ -23,7 +23,8 @@ def deploy():
     _pull_sources()
     _update_supervisord()
     _update_buildout()
-    # TODO: restart service
+
+    run('~/opt/ximpp-server/python/bin/supervisorctl restart xmpp-bot')
 
 
 def _pull_sources():
