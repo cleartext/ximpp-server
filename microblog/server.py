@@ -14,12 +14,19 @@ from pdb import set_trace
 
 def init(cfg):
     # Init logging
+    lcfg = cfg.get('logging', {})
+    level = getattr(
+        logging,
+        lcfg.get('level', 'ERROR').upper()
+    )
+    filename = lcfg.get('filename', 'debug.log')
+
     logging.basicConfig(
-        level = logging.DEBUG,
+        level = level,
         format = '%(levelname)-8s %(name)-8s %(message)s'
     )
     root = logging.getLogger()
-    handler = logging.FileHandler('debug.log')
+    handler = logging.FileHandler(filename)
     fmt =  logging.Formatter('%(asctime)s %(process)s/%(thread)s %(levelname)s %(name)s %(filename)s:%(lineno)s %(message)s')
     handler.setFormatter(fmt)
     root.addHandler(handler)
