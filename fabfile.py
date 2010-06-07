@@ -24,6 +24,10 @@ def deploy():
     _update_supervisord()
     _update_buildout()
 
+    restart()
+
+
+def restart():
     run('~/opt/ximpp-server/python/bin/supervisorctl restart xmpp-bot')
 
 
