@@ -58,6 +58,7 @@ def db_session(func):
                 return result
             except Exception:
                 session.rollback()
+                raise
             finally:
                 session.close()
 

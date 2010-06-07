@@ -7,6 +7,8 @@ from microblog.db import db_session
 from microblog.models import SearchTerm
 from sqlalchemy.orm.exc import NoResultFound
 
+from pdb import set_trace
+
 _searches = defaultdict(set)
 _queue = Queue()
 
@@ -79,12 +81,18 @@ def start(bot, session = None):
         num_recipients = 0
 
         text = text.lower()
+        receivers = set()
+
         for word, users in _searches.iteritems():
             if word in text:
-                num_recipients += len(users)
-                for user in users:
-                    user = bot.get_user_by_username(user, session)
-                    bot.send_message(user.jid, body, mfrom = bot.jid, mtype = 'chat', payload = payload)
+                receivers.update(users)
+
+        for user in receivers:
+            user = bot.get_user_by_username(user, session)
+            if user not in from_user.subscribers and \
+                    user != from_user:
+                num_recipients += 1
+                bot.send_message(user.jid, body, mfrom = bot.jid, mtype = 'chat', payload = payload)
 
         log.debug('This message was received by %s recipients.' % num_recipients)
 
@@ -93,10 +101,15 @@ def start(bot, session = None):
         log.debug('Starting search thread.')
         while True:
             event = _queue.get()
+
             if event is Sentinel:
                 log.debug('Stopping search thread.')
                 break
-            _process_event(event)
+
+            try:
+                _process_event(event)
+            except:
+                log.exception('Error during _process_event')
 
 
     thread = threading.Thread(target = _worker)
