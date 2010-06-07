@@ -85,7 +85,8 @@ def start(bot, session = None):
             if word in text:
                 for user in users:
                     user = bot.get_user_by_username(user, session)
-                    if user not in from_user.subscribers:
+                    if user not in from_user.subscribers and \
+                            user != from_user:
                         num_recipients += 1
                         bot.send_message(user.jid, body, mfrom = bot.jid, mtype = 'chat', payload = payload)
 
