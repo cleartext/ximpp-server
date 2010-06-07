@@ -218,8 +218,12 @@ class Bot(Commands, DBHelpers):
                 self.handleXMPPPresenceSubscription)
         self.xmpp.add_event_handler("got_presence_probe",
                 self.handleXMPPPresenceProbe)
-        for event in ["message", "got_online", "got_offline", "changed_status"]:
-            self.xmpp.add_event_handler(event, self.handleIncomingXMPPEvent)
+
+        self.xmpp.add_event_handler('message', self._handle_message)
+
+        for event in ['got_online', 'got_offline', 'changed_status']:
+            self.xmpp.add_event_handler(event, self._handle_status_change)
+
         ## BEGIN NEW
         self.xmpp.registerPlugin("xep_0030")
         ## END NEW
@@ -236,21 +240,22 @@ class Bot(Commands, DBHelpers):
             self.xmpp.sendPresence(pto = user.jid)
 
     @db_session
-    def handleIncomingXMPPEvent(self, event, session = None):
+    def _handle_message(self, event, session = None):
         try:
-            type_ = event['type']
-
-            if type_ == 'chat':
-                if self._handle_commands(event, session) == False:
-                    self.handle_new_message(event, session)
-                    search.process_message(event)
-            else:
-                self.log.error('unknown event type "%s":\n%s' % (type_, ET.tostring(event.xml)))
+            if self._handle_commands(event, session) == False:
+                self.handle_new_message(event, session)
+                search.process_message(event)
         except Exception, e:
             self.log.exception('error during XMPP event processing')
             if self.debug:
                 body = 'ERROR: %s' % e
                 self.xmpp.sendMessage(event['from'].jid, body, mfrom = self.jid, mtype = 'chat')
+
+
+    @db_session
+    def _handle_status_change(self, event, session = None):
+        # TODO think what to do on status change
+        pass
 
 
     def handleXMPPPresenceProbe(self, event):
