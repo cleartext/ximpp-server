@@ -81,14 +81,18 @@ def start(bot, session = None):
         num_recipients = 0
 
         text = text.lower()
+        receivers = set()
+
         for word, users in _searches.iteritems():
             if word in text:
-                for user in users:
-                    user = bot.get_user_by_username(user, session)
-                    if user not in from_user.subscribers and \
-                            user != from_user:
-                        num_recipients += 1
-                        bot.send_message(user.jid, body, mfrom = bot.jid, mtype = 'chat', payload = payload)
+                receivers.update(users)
+
+        for user in receivers:
+            user = bot.get_user_by_username(user, session)
+            if user not in from_user.subscribers and \
+                    user != from_user:
+                num_recipients += 1
+                bot.send_message(user.jid, body, mfrom = bot.jid, mtype = 'chat', payload = payload)
 
         log.debug('This message was received by %s recipients.' % num_recipients)
 
