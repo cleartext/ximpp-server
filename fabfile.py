@@ -37,9 +37,9 @@ def _pull_sources():
 
 def _update_buildout():
     with cd('~/'):
-        local('tar -zcf eggs.tar.gz eggs')
-        put('eggs.tar.gz', '/tmp')
-        run('tar -zxvf /tmp/eggs.tar.gz')
+        local('tar -zcf /tmp/eggs.tar.gz eggs')
+        put('/tmp/eggs.tar.gz', '/tmp')
+        run('tar -zxf /tmp/eggs.tar.gz')
 
     with cd(os.path.join(env.install_path, 'ximpp-server')):
         run('./bootstrap.sh')
