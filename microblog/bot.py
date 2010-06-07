@@ -274,18 +274,19 @@ class Bot(Commands, DBHelpers):
 
     def handle_new_message(self, event, session):
         text = event['body']
-        user = self.get_user_by_jid(event['from'].jid, session)
+        from_user = self.get_user_by_jid(event['from'].jid, session)
 
         payload = self._extract_payload(event)
 
-        body = '@%s: %s' % (user.username, text)
-        for subscriber in user.subscribers:
+        body = '@%s: %s' % (from_user.username, text)
+        for subscriber in from_user.subscribers:
             self.send_message(subscriber.jid, body, mfrom = self.jid, mtype = 'chat', payload = payload)
 
-        body = 'Mention by @%s: %s' % (user.username, text)
+        body = 'Mention by @%s: %s' % (from_user.username, text)
         for username in re.findall(r'@\w+', text):
             user = self.get_user_by_username(username[1:], session)
-            self.send_message(user.jid, body, mfrom = self.jid, mtype = 'chat', payload = payload)
+            if user not in from_user.subscribers:
+                self.send_message(user.jid, body, mfrom = self.jid, mtype = 'chat', payload = payload)
 
 
     def send_message(self, mto, mbody,
