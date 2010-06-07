@@ -1,5 +1,5 @@
 import os.path
-from fabric.api import run, env, settings, cd, sudo
+from fabric.api import run, env, settings, cd, sudo, put, local
 
 env.install_path = '/home/admin/opt'
 
@@ -13,9 +13,12 @@ def mblog():
 
 
 def deploy():
+    sudo('apt-get update')
     sudo('apt-get --yes install python2.5')
     sudo('apt-get --yes install python2.5-dev')
     sudo('apt-get --yes install libssl-dev')
+    sudo('apt-get --yes install git-core')
+    sudo('apt-get --yes install make')
 
     _pull_sources()
     _update_buildout()
@@ -33,6 +36,11 @@ def _pull_sources():
 
 
 def _update_buildout():
+    with cd('~/'):
+        local('tar -zcf eggs.tar.gz eggs')
+        put('eggs.tar.gz', '/tmp')
+        run('tar -zxvf /tmp/eggs.tar.gz')
+
     with cd(os.path.join(env.install_path, 'ximpp-server')):
         run('./bootstrap.sh')
 
