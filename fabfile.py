@@ -47,18 +47,22 @@ def _update_buildout():
 
 
 def _update_supervisord():
-    sudo('mkdir -p ~/log')
-    sudo('mkdir -p ~/run')
-    sudo('mkdir -p ~/etc/supervisor.d')
+    run('mkdir -p ~/log')
+    run('mkdir -p ~/run')
+    run('mkdir -p ~/etc/supervisor.d')
 
     configs = os.path.join(
         env.install_path, 'ximpp-server', 'configs'
     )
-    svisor_main = '~/env/supervisord.conf'
+    svisor_main = '~/etc/supervisord.conf'
     svisor_main_dist = os.path.join(configs, 'supervisord', 'common.conf')
 
-    svisor_bot = '~/env/supervisor.d/bot.conf'
+    svisor_bot = '~/etc/supervisor.d/bot.conf'
     svisor_bot_dist = os.path.join(configs, 'supervisord', env.host + '.conf')
 
-    sudo('test -e %(svisor_main)s || ln -s %(svisor_main_dist)s %(svisor_main)s' % locals())
-    sudo('test -e %(svisor_bot)s || ln -s %(svisor_bot_dist)s %(svisor_bot)s' % locals())
+    svisor_init = '/etc/init.d/supervisord'
+    svisor_init_dist = os.path.join(configs, 'supervisord', 'init.d.conf')
+
+    run('test -e %(svisor_main)s || ln -s %(svisor_main_dist)s %(svisor_main)s' % locals())
+    run('test -e %(svisor_bot)s || ln -s %(svisor_bot_dist)s %(svisor_bot)s' % locals())
+    sudo('test -e %(svisor_init)s || ( ln -s %(svisor_init_dist)s %(svisor_init)s && update-rc.d supervisord defaults )' % locals())
