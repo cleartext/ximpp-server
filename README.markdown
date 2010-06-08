@@ -33,9 +33,22 @@ Deployment
   bot's sources, build the python2.6, copy all eggs from the dev machine,
   setup the supervisord, and finally, start the bot.
 
+Continuous integration
+----------------------
+
+As new changes are introduced in the codebase, all you need to do is to
+push them on the GitHub and to run `python/bin/fab client_name deploy`.
+
+Also, you can add such function to the `fabfile` to upgrade all clients machines:
+
+    :::python
+    def all_clients():
+        env.hosts = ['clent1', 'client2', ...]
+
 ChangeLog
 ---------
 
 - Added MySQL backend (and merged with main code).
 - Follow, unfollow, followers and following commands.
 - Added search add, delete and list.
+
