@@ -39,7 +39,7 @@ Continuous integration
 As new changes are introduced in the codebase, all you need to do is to
 push them on the GitHub and to run `python/bin/fab client_name deploy`.
 
-Also, you can add such function to the `fabfile` to upgrade all clients machines:
+Also, you can add such function to the `fabfile.py` to upgrade all clients machines:
 
     def all_clients():
         env.hosts = ['clent1', 'client2', ...]
