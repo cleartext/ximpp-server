@@ -41,7 +41,6 @@ push them on the GitHub and to run `python/bin/fab client_name deploy`.
 
 Also, you can add such function to the `fabfile` to upgrade all clients machines:
 
-    :::python
     def all_clients():
         env.hosts = ['clent1', 'client2', ...]
 
