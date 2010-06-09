@@ -44,7 +44,7 @@ def init(cfg):
 
     logging.basicConfig(
         level = level,
-        format = '%(levelname)-8s %(name)-8s %(message)s'
+        format = '%(levelname)-8s %(name)-8s %(filename)s:%(lineno)s %(message)s'
     )
     root = logging.getLogger()
     handler = logging.FileHandler(filename)
