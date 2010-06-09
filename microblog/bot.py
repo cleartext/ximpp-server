@@ -216,8 +216,8 @@ class Bot(Commands, DBHelpers):
         self.xmpp.add_event_handler("session_start", self.handleXMPPConnected)
         self.xmpp.add_event_handler("changed_subscription",
                 self.handleXMPPPresenceSubscription)
-        self.xmpp.add_event_handler("got_presence_probe",
-                self.handleXMPPPresenceProbe)
+        self.xmpp.add_event_handler("presence_probe",
+                self.handle_presence_probe)
 
         self.xmpp.add_event_handler('message', self._handle_message)
 
@@ -258,7 +258,7 @@ class Bot(Commands, DBHelpers):
         pass
 
 
-    def handleXMPPPresenceProbe(self, event):
+    def handle_presence_probe(self, event):
         self.xmpp.sendPresence(pto = event["from"].jid)
 
     def handleXMPPPresenceSubscription(self, subscription):
