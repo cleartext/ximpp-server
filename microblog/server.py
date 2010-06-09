@@ -7,12 +7,33 @@ import yaml
 
 from microblog import db
 from microblog.bot import Bot
-from microblog.frontend import HTTPFrontend
+#from microblog.frontend import HTTPFrontend
 
 from pdb import set_trace
 
+import traceback, signal, threading
+
+
+def dumpstacks(signal, frame):
+    id2name = dict([(th.ident, th.name) for th in threading.enumerate()])
+    code = []
+    for threadId, stack in sys._current_frames().items():
+        code.append("\n# Thread: %s(%d)" % (id2name[threadId], threadId))
+        for filename, lineno, name, line in traceback.extract_stack(stack):
+            code.append('File: "%s", line %d, in %s' % (filename, lineno, name))
+            if line:
+                code.append("  %s" % (line.strip()))
+    print "\n".join(code)
+
+
+def debug(sig, frame):
+    set_trace()
+
 
 def init(cfg):
+    if cfg['component'].get('debug', False):
+        signal.signal(signal.SIGUSR1, debug)
+
     # Init logging
     lcfg = cfg.get('logging', {})
     level = getattr(
@@ -23,7 +44,7 @@ def init(cfg):
 
     logging.basicConfig(
         level = level,
-        format = '%(levelname)-8s %(name)-8s %(message)s'
+        format = '%(levelname)-8s %(name)-8s %(filename)s:%(lineno)s %(message)s'
     )
     root = logging.getLogger()
     handler = logging.FileHandler(filename)
