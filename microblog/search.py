@@ -76,7 +76,6 @@ def start(bot, session = None):
         from_user = bot.get_user_by_jid(event['from'].jid, session)
 
         body = 'Search: @%s says "%s"' % (from_user.username, text)
-        payload = bot._extract_payload(event)
 
         num_recipients = 0
 
@@ -92,7 +91,7 @@ def start(bot, session = None):
             if user not in from_user.subscribers and \
                     user != from_user:
                 num_recipients += 1
-                bot.send_message(user.jid, body, mfrom = bot.jid, mtype = 'chat', payload = payload)
+                bot.send_message(user.jid, body, mfrom = bot.jid, mtype = 'chat', payload = event.payload)
 
         log.debug('This message was received by %s recipients.' % num_recipients)
 

@@ -94,10 +94,10 @@ class Commands(object):
 
         if user:
             body = 'Direct from @%s: %s' % (from_.username, message)
-            self.xmpp.sendMessage(user.jid, body, mfrom = self.jid, mtype = 'chat')
+            self.send_message(user.jid, body, mfrom = self.jid, mtype = 'chat', payload = event.payload)
         else:
             body = 'User @%s not found.' % username
-            self.xmpp.sendMessage(from_.jid, body, mfrom = self.jid, mtype = 'chat')
+            self.send_message(from_.jid, body, mfrom = self.jid, mtype = 'chat', payload = event.payload)
 
 
     def _reply_message(self, event, username, message, session = None):
@@ -106,10 +106,10 @@ class Commands(object):
 
         if user:
             body = 'Reply from @%s: %s' % (from_.username, message)
-            self.xmpp.sendMessage(user.jid, body, mfrom = self.jid, mtype = 'chat')
+            self.send_message(user.jid, body, mfrom = self.jid, mtype = 'chat', payload = event.payload)
         else:
             body = 'User @%s not found.' % username
-            self.xmpp.sendMessage(from_.jid, body, mfrom = self.jid, mtype = 'chat')
+            self.send_message(from_.jid, body, mfrom = self.jid, mtype = 'chat', payload = event.payload)
 
 
     def _add_search(self, event, word, session = None):
@@ -242,6 +242,9 @@ class Bot(Commands, DBHelpers):
     @db_session
     def _handle_message(self, event, session = None):
         try:
+            payload = self._extract_payload(event)
+            event.payload = payload
+
             if self._handle_commands(event, session) == False:
                 self.handle_new_message(event, session)
                 search.process_message(event)
@@ -269,30 +272,30 @@ class Bot(Commands, DBHelpers):
             self.xmpp.sendPresenceSubscription(pto=userJID, ptype="subscribe")
 
     def _extract_payload(self, event):
-        return filter(lambda x: x.tag.endswith('}x'), event.getPayload())
+        payload = filter(lambda x: x.tag.endswith('}x'), event.getPayload())
+
+        for node in payload:
+            if node.tag == '{http://cleartext.net/mblog}x':
+                buddy = node.find('{http://cleartext.net/mblog}buddy')
+                if buddy is not None:
+                    text_e = ET.SubElement(buddy, '{http://cleartext.net/mblog}text')
+                    text_e.text = event['body']
+        return payload
 
 
     def handle_new_message(self, event, session):
         text = event['body']
         from_user = self.get_user_by_jid(event['from'].jid, session)
 
-        payload = self._extract_payload(event)
-        for node in payload:
-            if node.tag == '{http://cleartext.net/mblog}x':
-                buddy = node.find('{http://cleartext.net/mblog}buddy')
-                if buddy is not None:
-                    text_e = ET.SubElement(buddy, '{http://cleartext.net/mblog}text')
-                    text_e.text = text
-
         body = '@%s: %s' % (from_user.username, text)
         for subscriber in from_user.subscribers:
-            self.send_message(subscriber.jid, body, mfrom = self.jid, mtype = 'chat', payload = payload)
+            self.send_message(subscriber.jid, body, mfrom = self.jid, mtype = 'chat', payload = event.payload)
 
         body = 'Mention by @%s: %s' % (from_user.username, text)
         for username in re.findall(r'@\w+', text):
             user = self.get_user_by_username(username[1:], session)
             if user not in from_user.subscribers:
-                self.send_message(user.jid, body, mfrom = self.jid, mtype = 'chat', payload = payload)
+                self.send_message(user.jid, body, mfrom = self.jid, mtype = 'chat', payload = event.payload)
 
 
     def send_message(self, mto, mbody,
