@@ -277,6 +277,12 @@ class Bot(Commands, DBHelpers):
         from_user = self.get_user_by_jid(event['from'].jid, session)
 
         payload = self._extract_payload(event)
+        for node in payload:
+            if node.tag == '{http://cleartext.net/mblog}x':
+                buddy = node.find('{http://cleartext.net/mblog}buddy')
+                if buddy is not None:
+                    text_e = ET.SubElement(buddy, '{http://cleartext.net/mblog}text')
+                    text_e.text = text
 
         body = '@%s: %s' % (from_user.username, text)
         for subscriber in from_user.subscribers:
