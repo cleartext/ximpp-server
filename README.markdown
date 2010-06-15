@@ -20,6 +20,12 @@ Deployment
   - configs/supervisord/mblog.cleartext.com.conf the same thing
     as with previous config. Rename and change the content.
 
+  - COMMIT THESE CONFIGS AND PUSH THEM TO THE GITHUB:
+
+        git add configs
+        git commit -m 'Configs for new host blah-blah.com'
+        git push
+
 * These steps are optional and needed only once, if there is not
   [fabric](http://fabfile.org) on the system.
   - Run ./bootstrap.sh on the dev machine to create `python`
