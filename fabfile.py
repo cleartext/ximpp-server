@@ -37,6 +37,18 @@ def restart():
     run('~/opt/ximpp-server/python/bin/supervisorctl restart xmpp-bot')
 
 
+def stop():
+    run('~/opt/ximpp-server/python/bin/supervisorctl stop xmpp-bot')
+
+
+def start():
+    run('~/opt/ximpp-server/python/bin/supervisorctl start xmpp-bot')
+
+
+def status():
+    run('~/opt/ximpp-server/python/bin/supervisorctl status xmpp-bot')
+
+
 def _run_silent(command):
     with(settings(
             hide('warnings', 'running', 'stdout', 'stderr'),
