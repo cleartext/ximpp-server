@@ -7,6 +7,7 @@ from microblog import search
 from microblog.db import db_session
 from microblog.models import User, Message, SearchTerm
 from microblog.utils import trace_methods
+from microblog.exceptions import UserNotFound
 from pdb import set_trace
 from xml.etree import cElementTree as ET
 
@@ -190,10 +191,16 @@ class DBHelpers(object):
 
     def get_user_by_jid(self, jid, session):
         jid = jid.split('/', 1)[0]
-        return session.query(User).filter(User.jid == jid).scalar()
+        user = session.query(User).filter(User.jid == jid).scalar()
+        if user is None:
+            raise UserNotFound('User with jid "%s" not found.' % jid)
+        return user
 
     def get_user_by_username(self, username, session):
-        return session.query(User).filter(User.username == username).scalar()
+        user = session.query(User).filter(User.username == username).scalar()
+        if user is None:
+            raise UserNotFound('User with username "%s" not found.' % username)
+        return user
 
 
 
@@ -212,10 +219,12 @@ class ComponentXMPP(sleekxmpp.componentxmpp.ComponentXMPP):
 class Bot(Commands, DBHelpers):
     def __init__(self, jid, password, server, port, debug = False):
         self.jid = jid
+        self.domain = jid.split('.', 1)[0]
+
         self.xmpp = ComponentXMPP(jid, password, server, port)
         self.xmpp.add_event_handler("session_start", self.handleXMPPConnected)
-        self.xmpp.add_event_handler("changed_subscription",
-                self.handleXMPPPresenceSubscription)
+        self.xmpp.add_event_handler('presence_subscribe',
+                self.handle_presence_subscribe)
         self.xmpp.add_event_handler("presence_probe",
                 self.handle_presence_probe)
 
@@ -264,12 +273,17 @@ class Bot(Commands, DBHelpers):
     def handle_presence_probe(self, event):
         self.xmpp.sendPresence(pto = event["from"].jid)
 
-    def handleXMPPPresenceSubscription(self, subscription):
-        if subscription["type"] == "subscribe":
-            userJID = subscription["from"].jid
+
+    def handle_presence_subscribe(self, subscription):
+        userJID = subscription["from"].jid
+
+        if userJID.rsplit('@', 1)[1] == self.domain:
             self.xmpp.sendPresenceSubscription(pto=userJID, ptype="subscribed")
             self.xmpp.sendPresence(pto = userJID)
             self.xmpp.sendPresenceSubscription(pto=userJID, ptype="subscribe")
+        else:
+            self.xmpp.sendPresenceSubscription(pto=userJID, ptype="unsubscribed")
+
 
     def _extract_payload(self, event):
         payload = filter(lambda x: x.tag.endswith('}x'), event.getPayload())
