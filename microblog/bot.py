@@ -162,7 +162,8 @@ class Commands(object):
         help for regex, func, help in _COMMANDS
     )
 
-    _COMMANDS = [(re.compile(regex), func, help) for regex, func, help in _COMMANDS]
+    _COMMANDS = [(re.compile(regex, re.IGNORECASE), func, help)
+                 for regex, func, help in _COMMANDS]
 
 
     def _handle_commands(self, event, session):
