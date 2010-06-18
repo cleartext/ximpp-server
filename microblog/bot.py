@@ -55,11 +55,26 @@ class Commands(object):
             if u.username == contact.username:
                 user.contacts.pop(idx)
                 session.commit()
-                self.xmpp.sendMessage(user.jid, 'done', mfrom = self.jid, mtype = 'chat')
+                self.xmpp.sendMessage(
+                    user.jid,
+                    'You don\'t follow @%s anymore.' % username,
+                    mfrom = self.jid,
+                    mtype = 'chat'
+                )
+                self.xmpp.sendMessage(
+                    contact.jid,
+                    'You lost one of your followers: @%s.' % user.username,
+                    mfrom = self.jid,
+                    mtype = 'chat'
+                )
                 return
 
-        body = 'You don\'t folow @%s' % username
-        self.xmpp.sendMessage(user.jid, body, mfrom = self.jid, mtype = 'chat')
+        self.xmpp.sendMessage(
+            user.jid,
+            'You don\'t folow @%s.' % username,
+            mfrom = self.jid,
+            mtype = 'chat'
+        )
 
 
 
@@ -77,10 +92,30 @@ class Commands(object):
             self.xmpp.sendMessage(event['from'].jid, body, mfrom = self.jid, mtype = 'chat')
             return
 
+        if contact in user.contacts:
+            self.xmpp.sendMessage(
+                user.jid,
+                'You already follow @%s.' % username,
+                mfrom = self.jid,
+                mtype = 'chat'
+            )
+            return
+
         user.contacts.append(contact)
         session.commit()
 
-        self.xmpp.sendMessage(user.jid, 'done', mfrom = self.jid, mtype = 'chat')
+        self.xmpp.sendMessage(
+            user.jid,
+            'Now you are following @%s.' % username,
+            mfrom = self.jid,
+            mtype = 'chat'
+        )
+        self.xmpp.sendMessage(
+            contact.jid,
+            'You have a new follower: @%s.' % user.username,
+            mfrom = self.jid,
+            mtype = 'chat'
+        )
 
 
     def _whoami(self, event, session = None):
