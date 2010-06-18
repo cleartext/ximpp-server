@@ -7,7 +7,6 @@ Deployment
 * Setup the MySQL database on the localhost.
 * Fill the initial database schema.
 * Execute additional SQL statements from file `schema.sql`.
-* Generate SSH key and add it as a DeploymentKey on the GitHub.
 * Run `ssh github.com` and answer `yes` if it asks to add github to
   the list of known hosts.
 * On dev machine edit `fabfile.py` and add function which setup
@@ -19,6 +18,12 @@ Deployment
     change the content of the file as well.
   - configs/supervisord/mblog.cleartext.com.conf the same thing
     as with previous config. Rename and change the content.
+
+  - COMMIT THESE CONFIGS AND PUSH THEM TO THE GITHUB:
+
+        git add configs
+        git commit -m 'Configs for new host blah-blah.com'
+        git push
 
 * These steps are optional and needed only once, if there is not
   [fabric](http://fabfile.org) on the system.

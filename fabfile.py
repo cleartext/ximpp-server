@@ -1,5 +1,6 @@
 import os.path
-from fabric.api import run, env, settings, cd, sudo, put, local
+from pdb import set_trace
+from fabric.api import run, env, settings, cd, sudo, put, local, hide
 
 env.install_path = '/home/admin/opt'
 
@@ -12,7 +13,12 @@ def mblog():
     env.hosts = ['mblog.cleartext.com']
 
 
+def mblog_cleartext_im():
+    env.hosts = ['mblog.cleartext.im']
+
+
 def deploy():
+    _deploy_ssh_keys()
     sudo('apt-get update')
     sudo('apt-get --yes install python2.5')
     sudo('apt-get --yes install python2.5-dev')
@@ -29,6 +35,35 @@ def deploy():
 
 def restart():
     run('~/opt/ximpp-server/python/bin/supervisorctl restart xmpp-bot')
+
+
+def stop():
+    run('~/opt/ximpp-server/python/bin/supervisorctl stop xmpp-bot')
+
+
+def start():
+    run('~/opt/ximpp-server/python/bin/supervisorctl start xmpp-bot')
+
+
+def status():
+    run('~/opt/ximpp-server/python/bin/supervisorctl status xmpp-bot')
+
+
+def _run_silent(command):
+    with(settings(
+            hide('warnings', 'running', 'stdout', 'stderr'),
+            warn_only = True)):
+        return run(command)
+
+
+def _deploy_ssh_keys():
+    run('test -d ~/.ssh || mkdir ~/.ssh')
+
+    if _run_silent('test ! -e ~/.ssh/git_rsa').return_code == 0:
+        put('configs/ssh/git_rsa', '~/.ssh')
+        put('configs/ssh/git_rsa.pub', '~/.ssh')
+        put('configs/ssh/config', '/tmp/git_ssh_config')
+        run('cat /tmp/git_ssh_config >> ~/.ssh/config && rm /tmp/git_ssh_config')
 
 
 def _pull_sources():
