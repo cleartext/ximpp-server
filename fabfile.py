@@ -16,6 +16,9 @@ def mblog():
 def mblog_cleartext_im():
     env.hosts = ['mblog.cleartext.im']
 
+def cleartext_freightinvestor_com():
+    env.hosts = ['cleartext.freightinvestor.com']
+
 
 def deploy():
     _deploy_ssh_keys()

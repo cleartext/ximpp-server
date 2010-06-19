@@ -21,7 +21,7 @@ class Commands(object):
         if user:
             followers = list(user.subscribers)
             if followers:
-                body = 'You followers are:\n' + '\n'.join(
+                body = 'Your followers are:\n' + '\n'.join(
                     f.username for f in followers
                 )
             else:
@@ -34,7 +34,7 @@ class Commands(object):
         if user:
             contacts = list(user.contacts)
             if contacts:
-                body = 'You contacts are:\n' + '\n'.join(
+                body = 'Your contacts are:\n' + '\n'.join(
                     f.username for f in contacts
                 )
             else:
@@ -129,7 +129,7 @@ class Commands(object):
         from_ = self.get_user_by_jid(event['from'].jid, session)
 
         if user:
-            body = 'Direct from @%s: %s' % (from_.username, message)
+            body = 'Direct message from @%s: %s' % (from_.username, message)
             self.send_message(user.jid, body, mfrom = self.jid, mtype = 'chat', payload = event.payload)
         else:
             body = 'User @%s not found.' % username
@@ -165,7 +165,7 @@ class Commands(object):
         terms = session.query(SearchTerm).filter(SearchTerm.username == user.username)
 
         if terms.count() > 0:
-            body = 'You searches:\n' + '\n'.join(
+            body = 'Your searches:\n' + '\n'.join(
                 t.term for t in terms
             )
         else:
@@ -180,13 +180,13 @@ class Commands(object):
 
 
     _COMMANDS = [
-        (r'^me$', _whoami, '"me" - shows who you are, your username and jid'),
+        (r'^me$', _whoami, '"me" - shows who you are, your username and jid (Jabber ID)'),
         (r'^ers$', _show_followers, '"ers" - shows your followers'),
         (r'^ing$', _show_contacts, '"ing" - shows who you follow'),
-        (r'^f (?P<username>\w+)$', _follow, '"f some_username" - follow this user'),
-        (r'^u (?P<username>\w+)$', _unfollow, '"u some_username" - unfollow this user'),
-        (r'^d (?P<username>\w+) (?P<message>.*)$', _direct_message, '"d some_username message text" - send direct message to the user'),
-        (r'^@(?P<username>\w+) (?P<message>.*)$', _reply_message, '"@username message text" - same as direct message'),
+        (r'^f (?P<username>\w+)$', _follow, '"f username" - follow this user'),
+        (r'^u (?P<username>\w+)$', _unfollow, '"u username" - unfollow this user'),
+        (r'^d (?P<username>\w+) (?P<message>.*)$', _direct_message, '"d username message text" - send direct message to the user'),
+        (r'^@(?P<username>\w+) (?P<message>.*)$', _reply_message, '"@username message text" - mention a user, a public message to a user'),
         (r'^s$', _show_searches, '"s" - show saved searches'),
         (r'^s (?P<word>\w+)$', _add_search, '"s word" - save live search term'),
         (r'^us (?P<word>\w+)$', _remove_search, '"us word" - delete live search term'),
