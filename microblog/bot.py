@@ -27,7 +27,8 @@ class Payload(list):
             buddy = self._find_buddy_node()
             if buddy is not None:
                 self._text = ET.SubElement(buddy, '{http://cleartext.net/mblog}text')
-        self._text.text = text
+        else:
+            self._text.text = text
 
 
     def _get_text(self):
