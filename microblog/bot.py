@@ -295,7 +295,7 @@ class ComponentXMPP(sleekxmpp.componentxmpp.ComponentXMPP):
 class Bot(Commands, DBHelpers):
     def __init__(self, jid, password, server, port, debug = False):
         self.jid = jid
-        self.domain = jid.split('.', 1)[0]
+        self.domain = jid.split('.', 1)[1]
 
         self.xmpp = ComponentXMPP(jid, password, server, port)
         self.xmpp.add_event_handler("session_start", self.handleXMPPConnected)
@@ -361,7 +361,7 @@ class Bot(Commands, DBHelpers):
         else:
             self.log.warning(
                 'Access denied for user %s, because this bot service on the domain %s.' % \
-                (user_jid, user_domain)
+                (user_jid, self.domain)
             )
             self.xmpp.sendPresenceSubscription(pto = user_jid, ptype = 'unsubscribed')
 
