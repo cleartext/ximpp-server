@@ -107,6 +107,6 @@ def _update_supervisord():
     svisor_init = '/etc/init.d/supervisord'
     svisor_init_dist = os.path.join(configs, 'supervisord', 'init.d.conf')
 
-    run('test -e %(svisor_main)s || ln -s %(svisor_main_dist)s %(svisor_main)s' % locals())
-    run('test -e %(svisor_bot)s || ln -s %(svisor_bot_dist)s %(svisor_bot)s' % locals())
-    sudo('test -e %(svisor_init)s || ( ln -s %(svisor_init_dist)s %(svisor_init)s && update-rc.d supervisord defaults )' % locals())
+    run('test -L %(svisor_main)s || ln -s %(svisor_main_dist)s %(svisor_main)s' % locals())
+    run('test -L %(svisor_bot)s || ln -s %(svisor_bot_dist)s %(svisor_bot)s' % locals())
+    sudo('test -L %(svisor_init)s || ( ln -s %(svisor_init_dist)s %(svisor_init)s && update-rc.d supervisord defaults )' % locals())
