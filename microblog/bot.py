@@ -13,14 +13,22 @@ from xml.etree import cElementTree as ET
 
 
 class Payload(list):
+    """ This class helps to extend cleartext's stanzas.
+    """
+
+    def _find_buddy_node(self):
+        for node in self:
+            if node.tag == '{http://cleartext.net/mblog}x':
+                return node.find('{http://cleartext.net/mblog}buddy')
+
+
     def _set_text(self, text):
         if getattr(self, '_text', None) is None:
-            for node in self:
-                if node.tag == '{http://cleartext.net/mblog}x':
-                    buddy = node.find('{http://cleartext.net/mblog}buddy')
-                    if buddy is not None:
-                        self._text = ET.SubElement(buddy, '{http://cleartext.net/mblog}text')
+            buddy = self._find_buddy_node()
+            if buddy is not None:
+                self._text = ET.SubElement(buddy, '{http://cleartext.net/mblog}text')
         self._text.text = text
+
 
     def _get_text(self):
         _text = getattr(self, '_text', None)
@@ -29,7 +37,17 @@ class Payload(list):
         else:
             return _text.text
 
+
     text = property(_get_text, _set_text)
+
+
+    def add_node(self, name, text = None):
+        buddy = self._find_buddy_node()
+        if buddy is not None:
+            el = ET.SubElement(buddy, '{http://cleartext.net/mblog}' + name )
+            if text is not None:
+                el.text = text
+
 
 
 class Commands(object):

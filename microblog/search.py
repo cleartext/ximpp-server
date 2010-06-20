@@ -1,3 +1,4 @@
+import copy
 import threading
 import logging
 
@@ -86,12 +87,15 @@ def start(bot, session = None):
             if word in text:
                 receivers.update(users)
 
+        payload = copy.deepcopy(event.payload)
+        payload.add_node('search-result')
+
         for user in receivers:
             user = bot.get_user_by_username(user, session)
             if user not in from_user.subscribers and \
                     user != from_user:
                 num_recipients += 1
-                bot.send_message(user.jid, body, mfrom = bot.jid, mtype = 'chat', payload = event.payload)
+                bot.send_message(user.jid, body, mfrom = bot.jid, mtype = 'chat', payload = payload)
 
         log.debug('This message was received by %s recipients.' % num_recipients)
 
