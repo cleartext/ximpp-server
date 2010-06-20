@@ -12,6 +12,26 @@ from pdb import set_trace
 from xml.etree import cElementTree as ET
 
 
+class Payload(list):
+    def _set_text(self, text):
+        if getattr(self, '_text', None) is None:
+            for node in self:
+                if node.tag == '{http://cleartext.net/mblog}x':
+                    buddy = node.find('{http://cleartext.net/mblog}buddy')
+                    if buddy is not None:
+                        self._text = ET.SubElement(buddy, '{http://cleartext.net/mblog}text')
+        self._text.text = text
+
+    def _get_text(self):
+        _text = getattr(self, '_text', None)
+        if _text is None:
+            return None
+        else:
+            return _text.text
+
+    text = property(_get_text, _set_text)
+
+
 class Commands(object):
     """
     Mixin with commands.
@@ -127,6 +147,8 @@ class Commands(object):
     def _direct_message(self, event, username, message, session = None):
         user = self.get_user_by_username(username, session)
         from_ = self.get_user_by_jid(event['from'].jid, session)
+
+        event.payload.text = message
 
         if user:
             body = 'Direct message from @%s: %s' % (from_.username, message)
@@ -322,14 +344,8 @@ class Bot(Commands, DBHelpers):
 
 
     def _extract_payload(self, event):
-        payload = filter(lambda x: x.tag.endswith('}x'), event.getPayload())
-
-        for node in payload:
-            if node.tag == '{http://cleartext.net/mblog}x':
-                buddy = node.find('{http://cleartext.net/mblog}buddy')
-                if buddy is not None:
-                    text_e = ET.SubElement(buddy, '{http://cleartext.net/mblog}text')
-                    text_e.text = event['body']
+        payload = Payload(filter(lambda x: x.tag.endswith('}x'), event.getPayload()))
+        payload.text = event['body']
         return payload
 
 
