@@ -351,14 +351,19 @@ class Bot(Commands, DBHelpers):
 
 
     def handle_presence_subscribe(self, subscription):
-        userJID = subscription["from"].jid
+        user_jid = subscription['from'].jid
+        user_domain = user_jid.rsplit('@', 1)[1]
 
-        if userJID.rsplit('@', 1)[1] == self.domain:
-            self.xmpp.sendPresenceSubscription(pto=userJID, ptype="subscribed")
-            self.xmpp.sendPresence(pto = userJID)
-            self.xmpp.sendPresenceSubscription(pto=userJID, ptype="subscribe")
+        if user_domain == self.domain:
+            self.xmpp.sendPresenceSubscription(pto = user_jid, ptype='subscribed')
+            self.xmpp.sendPresence(pto = user_jid)
+            self.xmpp.sendPresenceSubscription(pto = user_jid, ptype='subscribe')
         else:
-            self.xmpp.sendPresenceSubscription(pto=userJID, ptype="unsubscribed")
+            self.log.warning(
+                'Access denied for user %s, because this bot service on the domain %s.' % \
+                (user_jid, user_domain)
+            )
+            self.xmpp.sendPresenceSubscription(pto = user_jid, ptype = 'unsubscribed')
 
 
     def _extract_payload(self, event):
