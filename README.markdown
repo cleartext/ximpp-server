@@ -49,10 +49,9 @@ Also, you can add such function to the `fabfile.py` to upgrade all clients machi
     def all_clients():
         env.hosts = ['clent1', 'client2', ...]
 
-ChangeLog
----------
 
-- Added MySQL backend (and merged with main code).
-- Follow, unfollow, followers and following commands.
-- Added search add, delete and list.
+Development
+-----------
+
+Update microblog/changelog.yml to track changes.
 

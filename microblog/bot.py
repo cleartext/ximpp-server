@@ -1,15 +1,21 @@
 import re
 import logging
 import datetime
+import yaml
+import os.path
 import sleekxmpp.componentxmpp
 
 from microblog import search
+from microblog import changelog
 from microblog.db import db_session
 from microblog.models import User, Message, SearchTerm
 from microblog.utils import trace_methods
 from microblog.exceptions import UserNotFound
 from pdb import set_trace
 from xml.etree import cElementTree as ET
+from pkg_resources import parse_version as V
+
+__version__ = '0.1'
 
 
 class Payload(list):
@@ -295,6 +301,8 @@ class ComponentXMPP(sleekxmpp.componentxmpp.ComponentXMPP):
 
 class Bot(Commands, DBHelpers):
     def __init__(self, jid, password, server, port, debug = False):
+        self._load_state()
+
         self.jid = jid
         self.domain = jid.split('.', 1)[1]
 
@@ -319,11 +327,67 @@ class Bot(Commands, DBHelpers):
         search.start(self)
 
 
+    def _load_state(self):
+        state_filename = os.path.expanduser('~/.cleartext-bot.yml')
+
+        self.state = None
+
+        if os.path.exists(state_filename):
+            with open(state_filename) as f:
+                self.state = yaml.load(f)
+
+        if not self.state:
+            self.state = {'version': '0.0'}
+
+
+    def _save_state(self):
+        with open(os.path.expanduser('~/.cleartext-bot.yml'), 'w') as f:
+            yaml.dump(self.state, f)
+
+
+    def _send_changes(self, users):
+        """ Sends changes to users if bot have configured,
+            and changes version number in the bot's state.
+        """
+        changes = changelog.load()
+        new_version = V(__version__)
+        old_version = V(self.state['version'])
+
+        if old_version < new_version:
+            post = [
+                'Bot was upgraded to a new version %s.' % __version__,
+                'Compared with the previous version it has following changes:'
+            ]
+            for version, version_string, messages in changes:
+                if version <= old_version:
+                    break
+
+                post.append('\nVersion %s:' % version_string)
+                for line in messages:
+                    post.append('  * ' + line)
+
+            for user in users:
+                self.send_message(
+                    user.jid,
+                    '\n'.join(post),
+                    mfrom = self.jid,
+                    mtype = 'chat'
+                )
+        self.state['version'] = __version__
+
+
+
     @db_session
     def handleXMPPConnected(self, event, session = None):
-        for user in self.get_all_users(session):
+        users = self.get_all_users(session)
+
+        for user in users:
             self.log.debug('sending presence to jid "%s"' % user.jid)
             self.xmpp.sendPresence(pto = user.jid)
+
+        self._send_changes(users)
+        self._save_state()
+
 
     @db_session
     def _handle_message(self, event, session = None):
