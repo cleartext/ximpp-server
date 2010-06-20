@@ -300,7 +300,7 @@ class ComponentXMPP(sleekxmpp.componentxmpp.ComponentXMPP):
 
 
 class Bot(Commands, DBHelpers):
-    def __init__(self, jid, password, server, port, debug = False):
+    def __init__(self, jid, password, server, port, debug = False, changelog_notifications = False):
         self._load_state()
 
         self.jid = jid
@@ -323,6 +323,7 @@ class Bot(Commands, DBHelpers):
         ## END NEW
         self.log = logging.getLogger('bot')
         self.debug = debug
+        self.changelog_notifications = changelog_notifications
 
         search.start(self)
 
@@ -349,30 +350,32 @@ class Bot(Commands, DBHelpers):
         """ Sends changes to users if bot have configured,
             and changes version number in the bot's state.
         """
-        changes = changelog.load()
-        new_version = V(__version__)
-        old_version = V(self.state['version'])
 
-        if old_version < new_version:
-            post = [
-                'Bot was upgraded to a new version %s.' % __version__,
-                'Compared with the previous version it has following changes:'
-            ]
-            for version, version_string, messages in changes:
-                if version <= old_version:
-                    break
+        if self.changelog_notifications:
+            changes = changelog.load()
+            new_version = V(__version__)
+            old_version = V(self.state['version'])
 
-                post.append('\nVersion %s:' % version_string)
-                for line in messages:
-                    post.append('  * ' + line)
+            if old_version < new_version:
+                post = [
+                    'Bot was upgraded to a new version %s.' % __version__,
+                    'Compared with the previous version it has following changes:'
+                ]
+                for version, version_string, messages in changes:
+                    if version <= old_version:
+                        break
 
-            for user in users:
-                self.send_message(
-                    user.jid,
-                    '\n'.join(post),
-                    mfrom = self.jid,
-                    mtype = 'chat'
-                )
+                    post.append('\nVersion %s:' % version_string)
+                    for line in messages:
+                        post.append('  * ' + line)
+
+                for user in users:
+                    self.send_message(
+                        user.jid,
+                        '\n'.join(post),
+                        mfrom = self.jid,
+                        mtype = 'chat'
+                    )
         self.state['version'] = __version__
 
 

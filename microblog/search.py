@@ -46,9 +46,10 @@ def remove_search(word, username, session = None):
 
 
 def process_message(event):
-    log = logging.getLogger('search')
-    log.debug('Adding text to the queue: "%s"' % event['body'])
-    _queue.put(event)
+    if event.getType() == 'chat':
+        log = logging.getLogger('search')
+        log.debug('Adding text to the queue: "%s"' % event['body'])
+        _queue.put(event)
 
 
 def stop():
