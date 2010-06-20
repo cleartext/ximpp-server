@@ -5,6 +5,13 @@ from fabric.api import run, env, settings, cd, sudo, put, local, hide
 env.install_path = '/home/admin/opt'
 
 
+def _run_silent(command):
+    with(settings(
+            hide('warnings', 'running', 'stdout', 'stderr'),
+            warn_only = True)):
+        return run(command)
+
+
 def localhost():
     env.hosts = ['localhost']
 
@@ -38,7 +45,13 @@ def deploy():
 
 
 def restart():
-    run('~/opt/ximpp-server/python/bin/supervisorctl restart xmpp-bot')
+    if _run_silent('~/opt/ximpp-server/python/bin/supervisorctl status xmpp-bot | grep \'No such process\'').return_code != 0:
+        # Here we check if supervisor already know about xmpp-bot
+        # If it does, then just restart
+        run('~/opt/ximpp-server/python/bin/supervisorctl restart xmpp-bot')
+    else:
+        # Else, run update and bot will be started automatically
+        run('~/opt/ximpp-server/python/bin/supervisorctl update')
 
 
 def stop():
@@ -51,13 +64,6 @@ def start():
 
 def status():
     run('~/opt/ximpp-server/python/bin/supervisorctl status xmpp-bot')
-
-
-def _run_silent(command):
-    with(settings(
-            hide('warnings', 'running', 'stdout', 'stderr'),
-            warn_only = True)):
-        return run(command)
 
 
 def _deploy_ssh_keys():
