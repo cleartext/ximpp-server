@@ -307,7 +307,7 @@ class Bot(Commands, DBHelpers):
         self.domain = jid.split('.', 1)[1]
 
         self.xmpp = ComponentXMPP(jid, password, server, port)
-        self.xmpp.add_event_handler("session_start", self.handleXMPPConnected)
+        self.xmpp.add_event_handler("session_start", self.handle_xmpp_connected)
         self.xmpp.add_event_handler('presence_subscribe',
                 self.handle_presence_subscribe)
         self.xmpp.add_event_handler("presence_probe",
@@ -320,6 +320,7 @@ class Bot(Commands, DBHelpers):
 
         ## BEGIN NEW
         self.xmpp.registerPlugin("xep_0030")
+        self.xmpp.registerPlugin("xep_0054")
         ## END NEW
         self.log = logging.getLogger('bot')
         self.debug = debug
@@ -379,9 +380,19 @@ class Bot(Commands, DBHelpers):
         self.state['version'] = __version__
 
 
+    def _publish_vcard(self):
+        vcard = self.xmpp.plugin['xep_0054'].makevcard(
+            NICKNAME = 'Cleartext Bot'
+        )
+        vcard = self.xmpp.plugin['xep_0054'].setvcard(
+            vcard, mfrom = self.jid
+        )
+
 
     @db_session
-    def handleXMPPConnected(self, event, session = None):
+    def handle_xmpp_connected(self, event, session = None):
+        self._publish_vcard()
+
         users = self.get_all_users(session)
 
         for user in users:
