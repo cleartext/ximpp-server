@@ -15,7 +15,7 @@ from pdb import set_trace
 from xml.etree import cElementTree as ET
 from pkg_resources import parse_version as V
 
-__version__ = '0.1'
+__version__ = '0.1.1'
 
 
 class Payload(list):
