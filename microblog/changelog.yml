@@ -1,2 +1,4 @@
+'0.1.1':
+    - Fixed missing content of the 'text' node.
 '0.1':
     - Initial versioning.
