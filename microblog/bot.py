@@ -15,7 +15,7 @@ from pdb import set_trace
 from xml.etree import cElementTree as ET
 from pkg_resources import parse_version as V
 
-__version__ = '0.1.1'
+__version__ = changelog.current_version()
 
 
 class Payload(list):
@@ -241,9 +241,9 @@ class Commands(object):
         (r'^help$', _show_help, '"help" - show this help'),
     ]
 
-    _COMMANDS_HELP = 'Commands:\n  ' + '\n  '.join(
-        help for regex, func, help in _COMMANDS
-    )
+    _COMMANDS_HELP = 'Cleartext microblog, version %s.\n\nCommands:\n  ' % __version__ \
+        + '\n  '.join(help for regex, func, help in _COMMANDS) \
+        + '\n\n Need more help? Go to the online help: http://www.cleartext.com/esm'
 
     _COMMANDS = [(re.compile(regex, re.IGNORECASE), func, help)
                  for regex, func, help in _COMMANDS]
