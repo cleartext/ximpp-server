@@ -15,7 +15,7 @@ from pdb import set_trace
 from xml.etree import cElementTree as ET
 from pkg_resources import parse_version as V
 
-__version__ = '0.1'
+__version__ = changelog.current_version()
 
 
 class Payload(list):
@@ -33,6 +33,7 @@ class Payload(list):
             buddy = self._find_buddy_node()
             if buddy is not None:
                 self._text = ET.SubElement(buddy, '{http://cleartext.net/mblog}text')
+                self._text.text = text
         else:
             self._text.text = text
 
@@ -235,14 +236,14 @@ class Commands(object):
         (r'^d (?P<username>\w+) (?P<message>.*)$', _direct_message, '"d username message text" - send direct message to the user'),
         (r'^@(?P<username>\w+) (?P<message>.*)$', _reply_message, '"@username message text" - mention a user, a public message to a user'),
         (r'^s$', _show_searches, '"s" - show saved searches'),
-        (r'^s (?P<word>\w+)$', _add_search, '"s word" - save live search term'),
-        (r'^us (?P<word>\w+)$', _remove_search, '"us word" - delete live search term'),
+        (r'^s (?P<word>.+)$', _add_search, '"s word" - save live search term'),
+        (r'^us (?P<word>.+)$', _remove_search, '"us word" - delete live search term'),
         (r'^help$', _show_help, '"help" - show this help'),
     ]
 
-    _COMMANDS_HELP = 'Commands:\n  ' + '\n  '.join(
-        help for regex, func, help in _COMMANDS
-    )
+    _COMMANDS_HELP = 'Cleartext microblog, version %s.\n\nCommands:\n  ' % __version__ \
+        + '\n  '.join(help for regex, func, help in _COMMANDS) \
+        + '\n\n Need more help? Go to the online help: http://www.cleartext.com/esm'
 
     _COMMANDS = [(re.compile(regex, re.IGNORECASE), func, help)
                  for regex, func, help in _COMMANDS]
