@@ -10,7 +10,36 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from pdb import set_trace
 
-_searches = defaultdict(set)
+class SearchCache(object):
+    """ This class holds all search terms and
+        usernames which are waiting results.
+    """
+    def __init__(self):
+        self._terms = {}
+
+
+    def __getitem__(self, phrase):
+        """ Each phrase splitted and saved along with usernames.
+        """
+        if phrase not in self._terms:
+            self._terms[phrase] = (
+                tuple(
+                    filter(
+                        None,
+                        (word.strip() for word in phrase.split())
+                    )
+                ),
+                set()
+            )
+        return self._terms[phrase]
+
+
+    def items(self):
+        return self._terms.itervalues()
+
+
+
+_searches = SearchCache()
 _queue = Queue()
 
 class Sentinel(object): pass
@@ -22,7 +51,7 @@ def add_search(word, username, session = None):
 
     log = logging.getLogger('search')
     log.debug('New search term "%s" for username "%s"' % (word, username))
-    _searches[word].add(username)
+    _searches[word][1].add(username)
 
     session.add(SearchTerm(word, username))
 
@@ -33,7 +62,7 @@ def remove_search(word, username, session = None):
 
     log = logging.getLogger('search')
     log.debug('Removing search term "%s" for username "%s"' % (word, username))
-    _searches[word].discard(username)
+    _searches[word][1].discard(username)
 
     try:
         term = session.query(SearchTerm).filter(SearchTerm.term == word).filter(
@@ -66,7 +95,7 @@ def start(bot, session = None):
 
     count = 0
     for term in session.query(SearchTerm).all():
-        _searches[term.term].add(term.username)
+        _searches[term.term][1].add(term.username)
         count += 1
     log.debug('%d terms were loaded' % count)
 
@@ -84,8 +113,11 @@ def start(bot, session = None):
         text = text.lower()
         receivers = set()
 
-        for word, users in _searches.iteritems():
-            if word in text:
+        def all_in_text(words, text):
+            return all(map(lambda word: word in text, words))
+
+        for words, users in _searches.items():
+            if all_in_text(words, text):
                 receivers.update(users)
 
         payload = copy.deepcopy(event.payload)

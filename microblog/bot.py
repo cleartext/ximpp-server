@@ -236,8 +236,8 @@ class Commands(object):
         (r'^d (?P<username>\w+) (?P<message>.*)$', _direct_message, '"d username message text" - send direct message to the user'),
         (r'^@(?P<username>\w+) (?P<message>.*)$', _reply_message, '"@username message text" - mention a user, a public message to a user'),
         (r'^s$', _show_searches, '"s" - show saved searches'),
-        (r'^s (?P<word>\w+)$', _add_search, '"s word" - save live search term'),
-        (r'^us (?P<word>\w+)$', _remove_search, '"us word" - delete live search term'),
+        (r'^s (?P<word>.+)$', _add_search, '"s word" - save live search term'),
+        (r'^us (?P<word>.+)$', _remove_search, '"us word" - delete live search term'),
         (r'^help$', _show_help, '"help" - show this help'),
     ]
 
