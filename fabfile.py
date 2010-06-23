@@ -25,7 +25,7 @@ def mblog_cleartext_im():
 
 
 def cleartext_freightinvestor_com():
-    env.hosts = ['freightinvestor.cleartext.net']
+    env.hosts = ['cleartext.freightinvestor.com']
 
 
 def deploy():
