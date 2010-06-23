@@ -29,6 +29,7 @@ def cleartext_freightinvestor_com():
 
 
 def deploy():
+    check_working_dir()
     _deploy_ssh_keys()
     sudo('apt-get update')
     sudo('apt-get --yes install python2.5')
