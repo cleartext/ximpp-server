@@ -121,35 +121,42 @@ def _update_supervisord():
 
 
 def check_working_dir():
-    # checking if we are on another branch
-    result = local('git branch')
-    current_branch = 'master'
+    with(settings(
+            hide('warnings', 'running', 'stdout', 'stderr'),
+            warn_only = True)):
+        # checking if we are on another branch
+        result = local('git branch')
+        current_branch = 'master'
 
-    for line in result.split('\n'):
-        if line[0] == '*':
-            current_branch = line[2:]
+        for line in result.split('\n'):
+            if line[0] == '*':
+                current_branch = line[2:]
 
-    if current_branch != 'master':
-        result = prompt(
-            'You are on a branch "%s", do you want to continue (yes/no)?' % current_branch,
-            default = 'no')
-        if result.lower() != 'yes':
-            abort('Switch to the "master" branch (git checkout master) and try again.')
+        if current_branch != 'master':
+            result = prompt(
+                'You are on a branch "%s", do you want to continue (yes/no)?' % current_branch,
+                default = 'no')
+            if result.lower() != 'yes':
+                abort('Switch to the "master" branch (git checkout master) and try again.')
 
-    # checking for uncommited changes
-    result = local('git ls-files --stage --unmerged --killed --deleted --modified --others --exclude-standard -t')
-    if result:
-        result = prompt(
-            'You working directory is not clean:\n%s\n\nDo you want to continue anyway (yes/no)?' % result,
-            default = 'no')
-        if result.lower() != 'yes':
-            abort('Please, make sure that you working directory is clean, all files commited and pushed to the server.')
+        # checking for uncommited changes
+        result = local('git ls-files --stage --unmerged --killed --deleted --modified --others --exclude-standard -t')
+        if result:
+            result = prompt(
+                'You working directory is not clean:\n%s\n\nDo you want to continue anyway (yes/no)?' % result,
+                default = 'no')
+            if result.lower() != 'yes':
+                abort('Please, make sure that you working directory is clean, all files commited and pushed to the server.')
 
-    # checking if we have some unpushed commits
-    result = local('git cherry -v remotes/origin/%(current_branch)s %(current_branch)s' % locals())
-    if result:
-        result = prompt(
-            'You have not pushed these commits:\n%s\n\nDo you want to continue anyway (yes/no)?' % result,
-            default = 'no')
-        if result.lower() != 'yes':
-            abort('Please, push changes to the server (git push) and try again.')
+        # checking if we have some unpushed commits
+        result = local('git cherry -v remotes/origin/%(current_branch)s %(current_branch)s' % locals())
+
+        if result.return_code == 0:
+            result = prompt(
+                'You have not pushed these commits:\n%s\n\nDo you want to continue anyway (yes/no)?' % result,
+                default = 'no')
+            if result.lower() != 'yes':
+                abort('Please, push changes to the server (git push) and try again.')
+        else:
+            abort('Seems, that you current branch "%s" is not pushed the the server yet, please, switch to the "master".' % current_branch)
+
