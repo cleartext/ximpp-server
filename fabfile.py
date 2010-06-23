@@ -121,6 +121,22 @@ def _update_supervisord():
 
 
 def check_working_dir():
+    # checking if we are on another branch
+    result = local('git branch')
+    current_branch = 'master'
+
+    for line in result.split('\n'):
+        if line[0] == '*':
+            current_branch = line[2:]
+
+    if current_branch != 'master':
+        result = prompt(
+            'You are on a branch "%s", do you want to continue (yes/no)?' % current_branch,
+            default = 'no')
+        if result.lower() != 'yes':
+            abort('Switch to the "master" branch (git checkout master) and try again.')
+
+    # checking for uncommited changes
     result = local('git ls-files --stage --unmerged --killed --deleted --modified --others --exclude-standard -t')
     if result:
         result = prompt(
