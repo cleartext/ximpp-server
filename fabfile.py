@@ -121,7 +121,7 @@ def _update_supervisord():
 
 
 def check_working_dir():
-    result = local('git ls-files --stage --unmerged --killed --modified --others -X .gitignore -t')
+    result = local('git ls-files --stage --unmerged --killed --deleted --modified --others --exclude-standard -t')
     if result:
         result = prompt(
             'You working directory is not clean:\n%s\n\nDo you want to continue anyway (yes/no)?' % result,
