@@ -47,7 +47,9 @@ def deploy():
 def restart():
     if _run_silent('~/opt/ximpp-server/python/bin/supervisorctl status xmpp-bot | grep \'No such process\'').return_code != 0:
         # Here we check if supervisor already know about xmpp-bot
-        # If it does, then just restart
+        # run update, because config may have changed
+        run('~/opt/ximpp-server/python/bin/supervisorctl update')
+        # then just restart
         run('~/opt/ximpp-server/python/bin/supervisorctl restart xmpp-bot')
     else:
         # Else, run update and bot will be started automatically
