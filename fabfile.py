@@ -152,11 +152,12 @@ def check_working_dir():
         result = local('git cherry -v remotes/origin/%(current_branch)s %(current_branch)s' % locals())
 
         if result.return_code == 0:
-            result = prompt(
-                'You have not pushed these commits:\n%s\n\nDo you want to continue anyway (yes/no)?' % result,
-                default = 'no')
-            if result.lower() != 'yes':
-                abort('Please, push changes to the server (git push) and try again.')
+            if result:
+                result = prompt(
+                    'You have not pushed these commits:\n%s\n\nDo you want to continue anyway (yes/no)?' % result,
+                    default = 'no')
+                if result.lower() != 'yes':
+                    abort('Please, push changes to the server (git push) and try again.')
         else:
             abort('Seems, that you current branch "%s" is not pushed the the server yet, please, switch to the "master".' % current_branch)
 
