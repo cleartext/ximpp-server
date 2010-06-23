@@ -1,5 +1,7 @@
 import re
+import base64
 import logging
+import hashlib
 import datetime
 import yaml
 import os.path
@@ -310,14 +312,16 @@ class Bot(Commands, DBHelpers):
         self.xmpp = ComponentXMPP(jid, password, server, port)
         self.xmpp.add_event_handler("session_start", self.handle_xmpp_connected)
         self.xmpp.add_event_handler('presence_subscribe',
-                self.handle_presence_subscribe)
-        self.xmpp.add_event_handler("presence_probe",
-                self.handle_presence_probe)
+            self._handle_presence_subscribe)
+        self.xmpp.add_event_handler('presence_probe',
+            self._handle_presence_probe)
 
         self.xmpp.add_event_handler('message', self._handle_message)
 
         for event in ['got_online', 'got_offline', 'changed_status']:
             self.xmpp.add_event_handler(event, self._handle_status_change)
+
+        self.xmpp.add_event_handler('get_vcard', self._handle_get_vcard)
 
         ## BEGIN NEW
         self.xmpp.registerPlugin("xep_0030")
@@ -381,24 +385,48 @@ class Bot(Commands, DBHelpers):
         self.state['version'] = __version__
 
 
-    def _publish_vcard(self):
-        vcard = self.xmpp.plugin['xep_0054'].makevcard(
-            NICKNAME = 'Cleartext Bot'
-        )
-        vcard = self.xmpp.plugin['xep_0054'].setvcard(
-            vcard, mfrom = self.jid
-        )
+
+    def _handle_get_vcard(self, event):
+        with open('/home/admin/cleartext_esm_avatar.jpg') as file:
+            vcard = self.xmpp.plugin['xep_0054'].makevcard(
+                FN = 'Cleartext microblogging',
+                NICKNAME = 'Bot',
+                PHOTO = dict(
+                    TYPE = 'image/jpeg',
+                    BINVAL = base64.standard_b64encode(file.read()),
+                )
+            )
+        self.xmpp.plugin['xep_0054'].return_vcard(event, vcard)
+
+
+    def _send_presence(self, jid):
+        """ Sends presence along with some extensions.
+        """
+        presence = self.xmpp.Presence(sfrom = self.jid, sto = jid)
+
+        # vCard update
+        vcard_update = ET.Element('{vcard-temp:x:update}x')
+        photo = ET.SubElement(vcard_update, 'photo')
+        photo.text = hashlib.sha1('random').hexdigest()
+
+        presence.setPayload(vcard_update)
+
+        # Chat status
+        show = ET.Element('{%s}show' % self.xmpp.default_ns)
+        show.text = 'chat'
+        presence.setPayload(show)
+
+        self.xmpp.send(presence)
 
 
     @db_session
     def handle_xmpp_connected(self, event, session = None):
-        self._publish_vcard()
 
         users = self.get_all_users(session)
 
         for user in users:
             self.log.debug('sending presence to jid "%s"' % user.jid)
-            self.xmpp.sendPresence(pto = user.jid)
+            self._send_presence(user.jid)
 
         self._send_changes(users)
         self._save_state()
@@ -426,17 +454,17 @@ class Bot(Commands, DBHelpers):
         pass
 
 
-    def handle_presence_probe(self, event):
-        self.xmpp.sendPresence(pto = event["from"].jid)
+    def _handle_presence_probe(self, event):
+        self._send_presence(event['from'].jid)
 
 
-    def handle_presence_subscribe(self, subscription):
+    def _handle_presence_subscribe(self, subscription):
         user_jid = subscription['from'].jid
         user_domain = user_jid.rsplit('@', 1)[1]
 
         if user_domain == self.domain:
             self.xmpp.sendPresenceSubscription(pto = user_jid, ptype='subscribed')
-            self.xmpp.sendPresence(pto = user_jid)
+            self._send_presence(user_jid)
             self.xmpp.sendPresenceSubscription(pto = user_jid, ptype='subscribe')
         else:
             self.log.warning(
