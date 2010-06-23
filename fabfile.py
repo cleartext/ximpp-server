@@ -1,6 +1,6 @@
 import os.path
 from pdb import set_trace
-from fabric.api import run, env, settings, cd, sudo, put, local, hide
+from fabric.api import run, env, settings, cd, sudo, put, local, hide, prompt, abort
 
 env.install_path = '/home/admin/opt'
 
@@ -118,3 +118,15 @@ def _update_supervisord():
     run('rm -f %(svisor_main)s && ln -s %(svisor_main_dist)s %(svisor_main)s' % locals())
     run('rm -f %(svisor_bot)s && ln -s %(svisor_bot_dist)s %(svisor_bot)s' % locals())
     sudo('test -L %(svisor_init)s || ( ln -s %(svisor_init_dist)s %(svisor_init)s && update-rc.d supervisord defaults )' % locals())
+
+
+def check_working_dir():
+    result = local('git ls-files --stage --unmerged --killed --modified --others -X .gitignore -t')
+    if result:
+        result = prompt(
+            'You working directory is not clean:\n%s\n\nDo you want to continue anyway (yes/no)?' % result,
+            default = 'no')
+        if result.lower() != 'yes':
+            abort('Please, make sure that you working directory is clean, all files commited and pushed to the server.')
+
+
