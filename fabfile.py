@@ -145,4 +145,11 @@ def check_working_dir():
         if result.lower() != 'yes':
             abort('Please, make sure that you working directory is clean, all files commited and pushed to the server.')
 
-
+    # checking if we have some unpushed commits
+    result = local('git cherry -v remotes/origin/%(current_branch)s %(current_branch)s' % locals())
+    if result:
+        result = prompt(
+            'You have not pushed these commits:\n%s\n\nDo you want to continue anyway (yes/no)?' % result,
+            default = 'no')
+        if result.lower() != 'yes':
+            abort('Please, push changes to the server (git push) and try again.')
