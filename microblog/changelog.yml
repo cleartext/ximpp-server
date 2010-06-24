@@ -1,3 +1,5 @@
+'0.1.4':
+    - "Now bot have it's own name and avatar. It is able to send reply to client's request for vCard. Also, it has new config options: 'nickname', 'firstname' and 'avatar, and requires a new version of the SleekXMPP as I have to patch it and add a plugin to support XEP-0054."
 '0.1.3':
     - "Search by multiple words. All words must present in a text message."
 '0.1.2':

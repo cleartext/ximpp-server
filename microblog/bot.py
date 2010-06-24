@@ -303,7 +303,13 @@ class ComponentXMPP(sleekxmpp.componentxmpp.ComponentXMPP):
 
 
 class Bot(Commands, DBHelpers):
-    def __init__(self, jid, password, server, port, debug = False, changelog_notifications = False):
+    def __init__(self, jid, password, server, port,
+                 debug = False,
+                 changelog_notifications = False,
+                 nickname = 'Bot',
+                 firstname = 'Cleartext Microblogging',
+                 avatar = 'data/avatar.jpg',
+        ):
         self._load_state()
 
         self.jid = jid
@@ -330,6 +336,10 @@ class Bot(Commands, DBHelpers):
         self.log = logging.getLogger('bot')
         self.debug = debug
         self.changelog_notifications = changelog_notifications
+
+        self.nickname = nickname
+        self.firstname = firstname
+        self.avatar = avatar
 
         search.start(self)
 
@@ -387,10 +397,10 @@ class Bot(Commands, DBHelpers):
 
 
     def _handle_get_vcard(self, event):
-        with open('/home/admin/cleartext_esm_avatar.jpg') as file:
-            vcard = self.xmpp.plugin['xep_0054'].makevcard(
-                FN = 'Cleartext microblogging',
-                NICKNAME = 'Bot',
+        with open(self.avatar) as file:
+            vcard = self.xmpp.plugin['xep_0054'].make_vcard(
+                FN = self.firstname,
+                NICKNAME = self.nickname,
                 PHOTO = dict(
                     TYPE = 'image/jpeg',
                     BINVAL = base64.standard_b64encode(file.read()),
