@@ -1,3 +1,7 @@
+'0.1.5':
+    - "Added error message when you trying to save the same search terms twice."
+    - "Resolved issue 37 - say who also watching the same terms."
+    - "Add separate searchTerm nodes for each word in the saved search."
 '0.1.4':
     - "Now bot have it's own name and avatar. It is able to send reply to client's request for vCard."
     - "It has new config options: 'nickname', 'firstname' and 'avatar."
