@@ -112,6 +112,7 @@ def start(bot, session = None):
 
         text = text.lower()
         receivers = set()
+        terms = {} # user to terms hash
 
         def all_in_text(words, text):
             return all(map(lambda word: word in text, words))
@@ -119,14 +120,18 @@ def start(bot, session = None):
         for words, users in _searches.items():
             if all_in_text(words, text):
                 receivers.update(users)
+                for user in users:
+                    terms[user] = words
 
-        payload = copy.deepcopy(event.payload)
-        payload.add_node('search-result')
-
-        for user in receivers:
-            user = bot.get_user_by_username(user, session)
+        for username in receivers:
+            user = bot.get_user_by_username(username, session)
             if user not in from_user.subscribers and \
                     user != from_user:
+                payload = copy.deepcopy(event.payload)
+
+                for term in terms[username]:
+                    payload.add_node('searchTerm', term)
+
                 num_recipients += 1
                 bot.send_message(user.jid, body, mfrom = bot.jid, mtype = 'chat', payload = payload)
 
