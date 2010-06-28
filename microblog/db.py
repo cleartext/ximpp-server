@@ -3,6 +3,7 @@ import logging
 from functools import wraps
 from pdb import set_trace
 from sqlalchemy import create_engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.interfaces import PoolListener
 from sqlalchemy.orm import sessionmaker
 
