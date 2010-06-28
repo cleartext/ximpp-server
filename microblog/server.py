@@ -7,7 +7,6 @@ import yaml
 
 from microblog import db
 from microblog.bot import Bot
-#from microblog.frontend import HTTPFrontend
 
 from pdb import set_trace
 
@@ -71,6 +70,8 @@ def start_bot():
 
 
 def start_frontend():
+    from microblog.frontend import Frontend
+
     if len(sys.argv) != 2:
         print 'Usage: %s config.cfg' % sys.argv[0]
         sys.exit(1)
@@ -78,8 +79,8 @@ def start_frontend():
     cfg = yaml.load(open(sys.argv[1]).read())
 
     init(cfg)
-    logging.getLogger('frontend').debug('BLAH')
 
+    Frontend(**cfg['frontend']).start()
 
 
 if __name__ == '__main__':
