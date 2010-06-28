@@ -201,11 +201,13 @@ class Commands(object):
     def _add_search(self, event, word, session = None):
         user = self.get_user_by_jid(event['from'].jid, session)
         message = 'Now you are looking for "%s" in all messages.' % word
-        neightbours = search.add_search(word, user.username)
+        neightbours = search.add_search(word, user.username, max_neightbours = 21)
 
         if neightbours:
             message += '\nThese users are watching for the same terms:\n@'
-            message += '\n@'.join(neightbours)
+            message += '\n@'.join(neightbours[:20])
+            if len(neightbours) == 21:
+                message += '\nand more...'
 
         self.xmpp.sendMessage(
             user.jid,

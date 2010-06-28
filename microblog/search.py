@@ -47,15 +47,15 @@ class Sentinel(object): pass
 
 
 @db_session
-def add_search(word, username, session = None):
+def add_search(word, username, max_neightbours = 20, session = None):
     """ Adds a new search for user.
-        Returns no more then 20 users who search same terms.
+        Returns no more than 'max_neightbours' users who search same terms.
     """
     word = word.lower()
 
     log = logging.getLogger('search')
     log.debug('New search term "%s" for username "%s"' % (word, username))
-    neightbours = list(itertools.islice(_searches[word][1], 20))
+    neightbours = list(itertools.islice(_searches[word][1], max_neightbours))
     _searches[word][1].add(username)
 
     session.add(SearchTerm(word, username))
