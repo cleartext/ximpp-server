@@ -1,6 +1,7 @@
 import copy
 import threading
 import logging
+import itertools
 
 from Queue import Queue
 from collections import defaultdict
@@ -47,13 +48,18 @@ class Sentinel(object): pass
 
 @db_session
 def add_search(word, username, session = None):
+    """ Adds a new search for user.
+        Returns no more then 20 users who search same terms.
+    """
     word = word.lower()
 
     log = logging.getLogger('search')
     log.debug('New search term "%s" for username "%s"' % (word, username))
+    neightbours = list(itertools.islice(_searches[word][1], 20))
     _searches[word][1].add(username)
 
     session.add(SearchTerm(word, username))
+    return neightbours
 
 
 @db_session

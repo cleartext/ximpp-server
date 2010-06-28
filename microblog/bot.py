@@ -200,8 +200,19 @@ class Commands(object):
 
     def _add_search(self, event, word, session = None):
         user = self.get_user_by_jid(event['from'].jid, session)
-        search.add_search(word, user.username)
-        self.xmpp.sendMessage(user.jid, 'Now you are looking for "%s" in all messages' % word, mfrom = self.jid, mtype = 'chat')
+        message = 'Now you are looking for "%s" in all messages.' % word
+        neightbours = search.add_search(word, user.username)
+
+        if neightbours:
+            message += '\nThese users are watching for the same terms:\n@'
+            message += '\n@'.join(neightbours)
+
+        self.xmpp.sendMessage(
+            user.jid,
+            message,
+            mfrom = self.jid,
+            mtype = 'chat'
+        )
 
 
     def _remove_search(self, event, word, session = None):
