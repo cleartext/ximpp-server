@@ -8,7 +8,8 @@ setup(
     packages = find_packages(),
     entry_points = {
         'console_scripts': [
-            'bot = microblog.server:main',
+            'bot = microblog.server:start_bot',
+            'frontend = microblog.server:start_frontend',
         ]
     },
     zip_safe = True,
