@@ -5,12 +5,6 @@
 # License: New BSD License                              #
 #########################################################
 
-class _Dummy(object):
-    def __init__(self):
-        self.text = None
-
-_dummy = _Dummy()
-
 
 class Accessor(object):
     """Easy to use ElementTree accessor."""
@@ -21,8 +15,8 @@ class Accessor(object):
     def __repr__(self):
         return '<Element %s>' % self.xml.tag
 
-    def __len__(self):
-        return self.xml.__len__()
+    def __unicode__(self):
+        return self.xml.text
 
     def __iter__(self):
         return iter(self.xml)
@@ -64,4 +58,4 @@ class Accessor(object):
 
         if hasattr(self.xml, name):
             return getattr(self.xml, name)
-        return _dummy
+        return ''

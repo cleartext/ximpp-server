@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article id="user">
+    <section class="vcard">
+        <h1>{{ escape(user.username) }}'s sweet home.</h1>
+        {% if vcard %}
+            {% if vcard.PHOTO %}<img class="avatar" src="avatar/" />{% end %}
+            <dl>
+                {% if vcard.FN %}<dt>First name:</dt><dd>{{ escape(vcard.FN) }}</dd>{% end %}
+                {% if vcard.NICKNAME %}<dt>Nickname:</dt><dd>{{ escape(vcard.NICKNAME) }}</dd>{% end %}
+            </dl>
+        {% else %}
+            <p>No vCard.</p>
+        {% end %}
+    </section>
+</article>
+{% end %}
+
