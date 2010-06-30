@@ -7,7 +7,9 @@ import tornado.web
 from tornado import escape
 
 from microblog.db import db_session
-from microblog.db_helpers import DBHelpers
+from microblog.db_helpers import \
+    get_user_by_username, \
+    get_all_users
 from microblog.models import User
 from pdb import set_trace
 
@@ -36,7 +38,7 @@ class FrontPage(Handler):
     def get(self, session = None):
         self.render(
             'index.html',
-            users = self.get_all_users(session)
+            users = get_all_users(session)
         )
 
 
@@ -44,7 +46,7 @@ class FrontPage(Handler):
 class User(Handler):
     @db_session
     def get(self, username, session = None):
-        user = self.get_user_by_username(username, session)
+        user = get_user_by_username(username, session)
         self.render(
             'user.html',
             user = user,
@@ -55,7 +57,7 @@ class User(Handler):
 class Avatar(Handler):
     @db_session
     def get(self, username, session = None):
-        user = self.get_user_by_username(username, session)
+        user = get_user_by_username(username, session)
         vc = user.vcard
         if vc is None or vc.PHOTO is None:
             raise tornado.web.HTTPError(404)

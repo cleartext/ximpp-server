@@ -6,6 +6,9 @@ import itertools
 from Queue import Queue
 from collections import defaultdict
 from microblog.db import db_session
+from microblog.db_helpers import \
+    get_user_by_jid, \
+    get_user_by_username
 from microblog.models import SearchTerm
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -110,7 +113,7 @@ def start(bot, session = None):
         log.debug('Processing word "%s"' % event['body'])
 
         text = event['body']
-        from_user = bot.get_user_by_jid(event['from'].jid, session)
+        from_user = get_user_by_jid(event['from'].jid, session)
 
         body = 'Search: @%s says "%s"' % (from_user.username, text)
 
@@ -130,7 +133,7 @@ def start(bot, session = None):
                     terms[user] = words
 
         for username in receivers:
-            user = bot.get_user_by_username(username, session)
+            user = get_user_by_username(username, session)
             if user not in from_user.subscribers and \
                     user != from_user:
                 payload = copy.deepcopy(event.payload)

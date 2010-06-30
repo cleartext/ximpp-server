@@ -10,8 +10,10 @@ import sleekxmpp.componentxmpp
 from microblog import search
 from microblog import changelog
 from microblog.db import db_session, IntegrityError
-from microblog.db_helpers import DBHelpers, \
-    get_user_by_jid
+from microblog.db_helpers import \
+    get_user_by_jid, \
+    get_user_by_username, \
+    get_all_users
 from microblog.models import SearchTerm
 from microblog.utils import trace_methods
 from pdb import set_trace
@@ -108,7 +110,7 @@ class Commands(object):
     Mixin with commands.
     """
     def _show_followers(self, event, session = None):
-        user = self.get_user_by_jid(event['from'].jid, session)
+        user = get_user_by_jid(event['from'].jid, session)
         if user:
             followers = list(user.subscribers)
             if followers:
@@ -121,7 +123,7 @@ class Commands(object):
 
 
     def _show_contacts(self, event, session = None):
-        user = self.get_user_by_jid(event['from'].jid, session)
+        user = get_user_by_jid(event['from'].jid, session)
         if user:
             contacts = list(user.contacts)
             if contacts:
@@ -134,8 +136,8 @@ class Commands(object):
 
 
     def _unfollow(self, event, username, session = None):
-        user = self.get_user_by_jid(event['from'].jid, session)
-        contact = self.get_user_by_username(username, session)
+        user = get_user_by_jid(event['from'].jid, session)
+        contact = get_user_by_username(username, session)
 
         if not contact:
             body = 'User @%s not found.' % username
@@ -170,8 +172,8 @@ class Commands(object):
 
 
     def _follow(self, event, username, session = None):
-        user = self.get_user_by_jid(event['from'].jid, session)
-        contact = self.get_user_by_username(username, session)
+        user = get_user_by_jid(event['from'].jid, session)
+        contact = get_user_by_username(username, session)
 
         if not contact:
             body = 'User @%s not found.' % username
@@ -210,14 +212,14 @@ class Commands(object):
 
 
     def _whoami(self, event, session = None):
-        user = self.get_user_by_jid(event['from'].jid, session)
+        user = get_user_by_jid(event['from'].jid, session)
         body = 'Username: %s\nJID: %s' % (user.username, user.jid)
         self.xmpp.sendMessage(user.jid, body, mfrom = self.jid, mtype = 'chat')
 
 
     def _direct_message(self, event, username, message, session = None):
-        user = self.get_user_by_username(username, session)
-        from_ = self.get_user_by_jid(event['from'].jid, session)
+        user = get_user_by_username(username, session)
+        from_ = get_user_by_jid(event['from'].jid, session)
 
         event.payload.text = message
 
@@ -230,8 +232,8 @@ class Commands(object):
 
 
     def _reply_message(self, event, username, message, session = None):
-        user = self.get_user_by_username(username, session)
-        from_ = self.get_user_by_jid(event['from'].jid, session)
+        user = get_user_by_username(username, session)
+        from_ = get_user_by_jid(event['from'].jid, session)
 
         if user:
             body = 'Reply from @%s: %s' % (from_.username, message)
@@ -242,7 +244,7 @@ class Commands(object):
 
 
     def _add_search(self, event, word, session = None):
-        user = self.get_user_by_jid(event['from'].jid, session)
+        user = get_user_by_jid(event['from'].jid, session)
         try:
             neightbours = search.add_search(word, user.username, max_neightbours = 21)
         except IntegrityError:
@@ -264,13 +266,13 @@ class Commands(object):
 
 
     def _remove_search(self, event, word, session = None):
-        user = self.get_user_by_jid(event['from'].jid, session)
+        user = get_user_by_jid(event['from'].jid, session)
         search.remove_search(word, user.username)
         self.xmpp.sendMessage(user.jid, 'Search on "%s" was dropped' % word, mfrom = self.jid, mtype = 'chat')
 
 
     def _show_searches(self, event, session = None):
-        user = self.get_user_by_jid(event['from'].jid, session)
+        user = get_user_by_jid(event['from'].jid, session)
         terms = session.query(SearchTerm).filter(SearchTerm.username == user.username)
 
         if terms.count() > 0:
@@ -283,7 +285,7 @@ class Commands(object):
 
 
     def _show_help(self, event, session = None):
-        user = self.get_user_by_jid(event['from'].jid, session)
+        user = get_user_by_jid(event['from'].jid, session)
 
         self.xmpp.sendMessage(user.jid, self._COMMANDS_HELP, mfrom = self.jid, mtype = 'chat')
 
@@ -339,7 +341,7 @@ class ComponentXMPP(sleekxmpp.componentxmpp.ComponentXMPP):
 
 
 
-class Bot(Commands, DBHelpers):
+class Bot(Commands):
     def __init__(self, jid, password, server, port,
                  debug = False,
                  changelog_notifications = False,
@@ -480,7 +482,7 @@ class Bot(Commands, DBHelpers):
     @db_session
     def handle_xmpp_connected(self, event, session = None):
 
-        users = self.get_all_users(session)
+        users = get_all_users(session)
 
         for user in users:
             self.log.debug('sending presence to jid "%s"' % user.jid)
@@ -544,7 +546,7 @@ class Bot(Commands, DBHelpers):
 
     def handle_new_message(self, event, session):
         text = event['body']
-        from_user = self.get_user_by_jid(event['from'].jid, session)
+        from_user = get_user_by_jid(event['from'].jid, session)
 
         body = '@%s: %s' % (from_user.username, text)
         for subscriber in from_user.subscribers:
@@ -552,7 +554,7 @@ class Bot(Commands, DBHelpers):
 
         body = 'Mention by @%s: %s' % (from_user.username, text)
         for username in re.findall(r'@\w+', text):
-            user = self.get_user_by_username(username[1:], session)
+            user = get_user_by_username(username[1:], session)
             if user not in from_user.subscribers:
                 self.send_message(user.jid, body, mfrom = self.jid, mtype = 'chat', payload = event.payload)
 
