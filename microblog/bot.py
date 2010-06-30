@@ -20,14 +20,60 @@ from pkg_resources import parse_version as V
 __version__ = changelog.current_version()
 
 
+@db_session
+def get_user_by_jid(jid, session = None):
+    jid = jid.split('/', 1)[0]
+    user = session.query(User).filter(User.jid == jid).scalar()
+    if user is None:
+        raise UserNotFound('User with jid "%s" not found.' % jid)
+    return user
+
+
 class Payload(list):
     """ This class helps to extend cleartext's stanzas.
     """
+
+    def __init__(self, event, bot):
+        super(Payload, self).__init__(
+            filter(lambda x: x.tag.endswith('}x'), event.getPayload())
+        )
+        self._event = event
+        self._bot = bot
+        self.text = event['body']
+
+    def __getstate__(self):
+        d = self.__dict__.copy()
+        del d['_event']
+        del d['_bot']
+
 
     def _find_buddy_node(self):
         for node in self:
             if node.tag == '{http://cleartext.net/mblog}x':
                 return node.find('{http://cleartext.net/mblog}buddy')
+        # node not found, create one
+        ns = '{http://cleartext.net/mblog}'
+        user = get_user_by_jid(self._event['from'].jid)
+
+        x_e = ET.Element(ns + 'x')
+        buddy_e = ET.SubElement(x_e, 'buddy', type = 'sender')
+        ET.SubElement(buddy_e, 'displayName').text = user.vcard.NICKNAME
+        ET.SubElement(buddy_e, 'userName').text = user.username
+        ET.SubElement(buddy_e, 'jid').text = user.jid
+        #ET.SubElement(buddy_e, 'avatar', type = 'hash').text = '12345'
+        ET.SubElement(buddy_e, 'serviceJid').text = self._bot.jid
+        self.append(x_e)
+        return buddy_e
+
+#        <ns1:x xmlns:ns1="">
+#        <ns1:buddy type="sender">
+#            <ns1:displayName>user1</ns1:displayName>
+#            <ns1:userName>user1</ns1:userName>
+#            <ns1:jid>user1@coolbananas.com.au</ns1:jid>
+#            <ns1:avatar type="hash">00cff3b3f839de924777b6497876049b2a2404f4</ns1:avatar>
+#            <ns1:serviceJid>microblog.coolbananas.com.au</ns1:serviceJid>
+#        </ns1:buddy>
+#        </ns1:x>
 
 
     def _set_text(self, text):
@@ -461,7 +507,7 @@ class Bot(Commands, DBHelpers):
     @db_session
     def _handle_message(self, event, session = None):
         try:
-            payload = self._extract_payload(event)
+            payload = Payload(event, self)
             event.payload = payload
 
             if self._handle_commands(event, session) == False:
@@ -499,11 +545,6 @@ class Bot(Commands, DBHelpers):
             )
             self.xmpp.sendPresenceSubscription(pto = user_jid, ptype = 'unsubscribed')
 
-
-    def _extract_payload(self, event):
-        payload = Payload(filter(lambda x: x.tag.endswith('}x'), event.getPayload()))
-        payload.text = event['body']
-        return payload
 
 
     def handle_new_message(self, event, session):
