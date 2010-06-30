@@ -10,41 +10,36 @@ import sleekxmpp.componentxmpp
 from microblog import search
 from microblog import changelog
 from microblog.db import db_session, IntegrityError
-from microblog.db_helpers import DBHelpers
+from microblog.db_helpers import DBHelpers, \
+    get_user_by_jid
 from microblog.models import SearchTerm
 from microblog.utils import trace_methods
 from pdb import set_trace
 from xml.etree import cElementTree as ET
+from collections import defaultdict
 from pkg_resources import parse_version as V
 
 __version__ = changelog.current_version()
-
-
-@db_session
-def get_user_by_jid(jid, session = None):
-    jid = jid.split('/', 1)[0]
-    user = session.query(User).filter(User.jid == jid).scalar()
-    if user is None:
-        raise UserNotFound('User with jid "%s" not found.' % jid)
-    return user
 
 
 class Payload(list):
     """ This class helps to extend cleartext's stanzas.
     """
 
-    def __init__(self, event, bot):
+    def __init__(self, event, bot, session):
         super(Payload, self).__init__(
             filter(lambda x: x.tag.endswith('}x'), event.getPayload())
         )
         self._event = event
         self._bot = bot
+        self._session = session
         self.text = event['body']
 
     def __getstate__(self):
         d = self.__dict__.copy()
         del d['_event']
         del d['_bot']
+        del d['_session']
 
 
     def _find_buddy_node(self):
@@ -53,17 +48,19 @@ class Payload(list):
                 return node.find('{http://cleartext.net/mblog}buddy')
         # node not found, create one
         ns = '{http://cleartext.net/mblog}'
-        user = get_user_by_jid(self._event['from'].jid)
+        user = get_user_by_jid(self._event['from'].jid, self._session)
+        avatar_hash = self._bot.users[user.username].get('photo', '')
 
         x_e = ET.Element(ns + 'x')
         buddy_e = ET.SubElement(x_e, 'buddy', type = 'sender')
-        ET.SubElement(buddy_e, 'displayName').text = user.vcard.NICKNAME
+        ET.SubElement(buddy_e, 'displayName').text = unicode(user.vcard.NICKNAME) or user.username
         ET.SubElement(buddy_e, 'userName').text = user.username
         ET.SubElement(buddy_e, 'jid').text = user.jid
-        #ET.SubElement(buddy_e, 'avatar', type = 'hash').text = '12345'
+        ET.SubElement(buddy_e, 'avatar', type = 'hash').text = avatar_hash
         ET.SubElement(buddy_e, 'serviceJid').text = self._bot.jid
         self.append(x_e)
         return buddy_e
+
 
 #        <ns1:x xmlns:ns1="">
 #        <ns1:buddy type="sender">
@@ -350,6 +347,7 @@ class Bot(Commands, DBHelpers):
                  firstname = 'Cleartext Microblogging',
                  avatar = 'data/avatar.jpg',
         ):
+        self.users = defaultdict(dict) # Cache for some user's info
         self._load_state()
 
         self.jid = jid
@@ -361,6 +359,8 @@ class Bot(Commands, DBHelpers):
             self._handle_presence_subscribe)
         self.xmpp.add_event_handler('presence_probe',
             self._handle_presence_probe)
+        self.xmpp.add_event_handler('presence_available',
+            self._handle_presence_available)
 
         self.xmpp.add_event_handler('message', self._handle_message)
 
@@ -469,6 +469,14 @@ class Bot(Commands, DBHelpers):
         self.xmpp.send(presence)
 
 
+    def _send_presence_probe(self, jid):
+        self.xmpp.sendPresence(
+            ptype = 'probe',
+            pfrom = self.jid,
+            pto = jid,
+        )
+
+
     @db_session
     def handle_xmpp_connected(self, event, session = None):
 
@@ -477,6 +485,7 @@ class Bot(Commands, DBHelpers):
         for user in users:
             self.log.debug('sending presence to jid "%s"' % user.jid)
             self._send_presence(user.jid)
+            self._send_presence_probe(user.jid)
 
         self._send_changes(users)
         self._save_state()
@@ -485,7 +494,7 @@ class Bot(Commands, DBHelpers):
     @db_session
     def _handle_message(self, event, session = None):
         try:
-            payload = Payload(event, self)
+            payload = Payload(event, self, session)
             event.payload = payload
 
             if self._handle_commands(event, session) == False:
@@ -506,6 +515,14 @@ class Bot(Commands, DBHelpers):
 
     def _handle_presence_probe(self, event):
         self._send_presence(event['from'].jid)
+
+
+    def _handle_presence_available(self, event):
+        for part in event.getPayload():
+            if part.tag == '{vcard-temp:x:update}x':
+                el = part.find('{vcard-temp:x:update}photo')
+                if el is not None:
+                    self.users[event['from'].jid.split('@', 1)[0]]['photo'] = el.text
 
 
     def _handle_presence_subscribe(self, subscription):
