@@ -1,3 +1,5 @@
+'0.1.6':
+    - "Now bot add Cleartext's extension to stanzas from third-party clients. Resolves Issue-40."
 '0.1.5':
     - "Added error message when you trying to save the same search terms twice."
     - "Resolved issue 37 - say who also watching the same terms."
