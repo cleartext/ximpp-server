@@ -7,7 +7,6 @@ import yaml
 
 from microblog import db
 from microblog.bot import Bot
-#from microblog.frontend import HTTPFrontend
 
 from pdb import set_trace
 
@@ -56,7 +55,7 @@ def init(cfg):
     db.init(cfg['database'])
 
 
-def main():
+def start_bot():
     if len(sys.argv) != 2:
         print 'Usage: %s config.cfg' % sys.argv[0]
         sys.exit(1)
@@ -68,10 +67,21 @@ def main():
 
     bot.start()
 
-    # does not work, because bot running in single threaded mode.
-    #frontend = HTTPFrontend(8080)
-    #frontend.start()
+
+
+def start_frontend():
+    from microblog.frontend import Frontend
+
+    if len(sys.argv) != 2:
+        print 'Usage: %s config.cfg' % sys.argv[0]
+        sys.exit(1)
+
+    cfg = yaml.load(open(sys.argv[1]).read())
+
+    init(cfg)
+
+    Frontend(**cfg['frontend']).start()
 
 
 if __name__ == '__main__':
-    main()
+    start_bot()
