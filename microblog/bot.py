@@ -55,7 +55,7 @@ class Payload(list):
 
         x_e = ET.Element(ns + 'x')
         buddy_e = ET.SubElement(x_e, 'buddy', type = 'sender')
-        ET.SubElement(buddy_e, 'displayName').text = unicode(user.vcard.NICKNAME) or user.username
+        ET.SubElement(buddy_e, 'displayName').text = user.vcard and unicode(user.vcard.NICKNAME) or user.username
         ET.SubElement(buddy_e, 'userName').text = user.username
         ET.SubElement(buddy_e, 'jid').text = user.jid
         ET.SubElement(buddy_e, 'avatar', type = 'hash').text = avatar_hash
@@ -63,16 +63,6 @@ class Payload(list):
         self.append(x_e)
         return buddy_e
 
-
-#        <ns1:x xmlns:ns1="">
-#        <ns1:buddy type="sender">
-#            <ns1:displayName>user1</ns1:displayName>
-#            <ns1:userName>user1</ns1:userName>
-#            <ns1:jid>user1@coolbananas.com.au</ns1:jid>
-#            <ns1:avatar type="hash">00cff3b3f839de924777b6497876049b2a2404f4</ns1:avatar>
-#            <ns1:serviceJid>microblog.coolbananas.com.au</ns1:serviceJid>
-#        </ns1:buddy>
-#        </ns1:x>
 
 
     def _set_text(self, text):
