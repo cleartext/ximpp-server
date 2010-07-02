@@ -1,3 +1,5 @@
+'0.1.7':
+    - "Now .-_ symbols are supported in usernames. Resolves Issue-41."
 '0.1.6':
     - "Now bot add Cleartext's extension to stanzas from third-party clients. Resolves Issue-40."
 '0.1.5':
