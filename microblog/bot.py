@@ -486,6 +486,11 @@ class Bot(Commands):
     @db_session
     def _handle_message(self, event, session = None):
         try:
+            if event['type'] == 'error':
+                # Do nothing if this is error message from the server
+                # or other client
+                return
+
             payload = Payload(event, self, session)
             event.payload = payload
 
@@ -531,7 +536,6 @@ class Bot(Commands):
                 (user_jid, self.domain)
             )
             self.xmpp.sendPresenceSubscription(pto = user_jid, ptype = 'unsubscribed')
-
 
 
     def handle_new_message(self, event, session):
