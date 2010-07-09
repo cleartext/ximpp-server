@@ -363,6 +363,13 @@ class Bot(Commands):
 
         ## BEGIN NEW
         self.xmpp.registerPlugin("xep_0030")
+        self.xmpp.plugin['xep_0030'].identities['main'] = [
+            dict(
+                category = 'client',
+                type = 'pc',
+                name = firstname,
+            )
+        ]
         self.xmpp.registerPlugin("xep_0054")
         ## END NEW
         self.log = logging.getLogger('bot')
