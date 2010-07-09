@@ -1,3 +1,7 @@
+'0.1.9':
+    - "Fixed bot's name on service discovery. Resolves Issue-39."
+    - "Fixed bot's jid for development environment."
+    - "Fixed bot cycle error when it tries to send message about changes in new version and receives errors from the server."
 '0.1.8':
     - "Fixed issue 43 - unable to uses '-' in username."
 '0.1.7':
