@@ -3,6 +3,9 @@
 {% block header %}<h1>Cleartext Microblogging</h1>{% end %}
 
 {% block content %}
+<header>
+{% if current_user %}Welcome, {{ current_user.username }}! <a href="/logout/">logout</a>{% else %}<a href="/login/">Login</a>{% end %}
+</header>
 <article id="index">
     <section id="users">
         <h1>Users</h1>

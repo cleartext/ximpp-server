@@ -80,6 +80,7 @@ def start_frontend():
 
     init(cfg)
 
+    cfg['frontend']['login_url'] = '/login/'
     Frontend(**cfg['frontend']).start()
 
 
