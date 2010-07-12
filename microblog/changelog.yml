@@ -1,3 +1,6 @@
+'0.1.10':
+    - "Fixed issue-48, error occure when user has no nickname in the vCard."
+    - "Added login/logout pages and user authentication on the frontend."
 '0.1.9':
     - "Fixed bot's name on service discovery. Resolves Issue-39."
     - "Fixed bot's jid for development environment."
