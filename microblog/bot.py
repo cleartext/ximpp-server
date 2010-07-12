@@ -55,7 +55,9 @@ class Payload(list):
 
         x_e = ET.Element(ns + 'x')
         buddy_e = ET.SubElement(x_e, 'buddy', type = 'sender')
-        ET.SubElement(buddy_e, 'displayName').text = user.vcard and unicode(user.vcard.NICKNAME) or user.username
+        ET.SubElement(buddy_e, 'displayName').text = \
+            user.vcard and user.vcard.NICKNAME and unicode(user.vcard.NICKNAME) \
+            or user.username
         ET.SubElement(buddy_e, 'userName').text = user.username
         ET.SubElement(buddy_e, 'jid').text = user.jid
         ET.SubElement(buddy_e, 'avatar', type = 'hash').text = avatar_hash
