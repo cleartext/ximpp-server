@@ -16,7 +16,7 @@ class Accessor(object):
         return '<Element %s>' % self.xml.tag
 
     def __unicode__(self):
-        return self.xml.text
+        return self.xml.text or ''
 
     def __iter__(self):
         return iter(self.xml)
