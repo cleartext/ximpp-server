@@ -1,3 +1,8 @@
+'0.1.11':
+    - "Added follow/unfollow pages and friends on the user's profile page in web interface."
+    - "Fixed issue-50 - do not report about not found user if he is just mentioned in the message."
+    - "Fixed Issue-49. Now to menthion other user, you need to place a whitespace before the @ sign."
+    - "Fixed issue 48 (OneTeam app error)."
 '0.1.10':
     - "Fixed issue-48, error occure when user has no nickname in the vCard."
     - "Added login/logout pages and user authentication on the frontend."
