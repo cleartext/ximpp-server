@@ -1,9 +1,11 @@
 import logging
 import base64
+from urllib import quote
 import os.path
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
+from tornado.web import url
 from tornado import escape
 from collections import defaultdict
 
@@ -38,6 +40,7 @@ class Handler(tornado.web.RequestHandler):
         def _escape(value):
             return escape.xhtml_escape(unicode(value))
         kwargs['escape'] = _escape
+        kwargs['quote'] = quote
         return super(Handler, self).render(template, **kwargs)
 
 
@@ -80,7 +83,44 @@ class User(Handler):
             'user.html',
             user = user,
             vcard = user.vcard,
+            mypage = user == self.current_user,
         )
+
+
+
+class Follow(Handler):
+    @tornado.web.authenticated
+    def get(self, username):
+        user = get_user_by_username(username, self._session)
+        next = self.get_argument('next', '/')
+        self.render('follow.html', user = user, next = next)
+
+
+    @tornado.web.authenticated
+    def post(self, username):
+        if self.get_argument('choice') == 'YES':
+            user = get_user_by_username(username, self._session)
+            user.subscribers.append(self.current_user)
+        next = self.get_argument('next', '/')
+        self.redirect(next)
+
+
+
+class Unfollow(Handler):
+    @tornado.web.authenticated
+    def get(self, username):
+        user = get_user_by_username(username, self._session)
+        next = self.get_argument('next', '/')
+        self.render('unfollow.html', user = user, next = next)
+
+
+    @tornado.web.authenticated
+    def post(self, username):
+        if self.get_argument('choice') == 'YES':
+            user = get_user_by_username(username, self._session)
+            user.subscribers.remove(self.current_user)
+        next = self.get_argument('next', '/')
+        self.redirect(next)
 
 
 
@@ -101,7 +141,7 @@ class Avatar(Handler):
 class Login(Handler):
     def get(self):
         next = self.get_argument('next', '/')
-        self.render('login.html', next = next)
+        self.render('login.html', next = next, errors = defaultdict(unicode))
 
     def post(self):
         username = self.get_argument('username')
@@ -147,11 +187,13 @@ class Frontend(object):
         self.log.debug('Starting frontend.')
 
         application = tornado.web.Application([
-            (r'/', FrontPage),
-            (r'/user/(\w+)/', User),
-            (r'/user/(\w+)/avatar/', Avatar),
-            (r'/login/', Login),
-            (r'/logout/', Logout),
+            url(r'/', FrontPage, name = 'front-page'),
+            url(r'/user/(\w+)/', User, name = 'user'),
+            url(r'/user/(\w+)/avatar/', Avatar, name = 'avatar'),
+            url(r'/user/(\w+)/follow/', Follow, name = 'follow'),
+            url(r'/user/(\w+)/unfollow/', Unfollow, name = 'unfollow'),
+            url(r'/login/', Login, name = 'login'),
+            url(r'/logout/', Logout, name = 'logout'),
         ], **self.tornado_settings)
 
         http_server = tornado.httpserver.HTTPServer(application)
