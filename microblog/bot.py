@@ -556,7 +556,7 @@ class Bot(Commands):
             self.send_message(subscriber.jid, body, mfrom = self.jid, mtype = 'chat', payload = event.payload)
 
         body = 'Mention by @%s: %s' % (from_user.username, text)
-        for username in re.findall(r'@\w+', text):
+        for username in re.findall(r'\W@\w+', text):
             user = get_user_by_username(username[1:], session)
             if user not in from_user.subscribers:
                 self.send_message(user.jid, body, mfrom = self.jid, mtype = 'chat', payload = event.payload)
