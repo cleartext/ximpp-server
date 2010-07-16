@@ -14,6 +14,7 @@ from microblog.db_helpers import \
     get_user_by_jid, \
     get_user_by_username, \
     get_all_users
+from microblog.exceptions import UserNotFound
 from microblog.models import SearchTerm
 from microblog.utils import trace_methods
 from pdb import set_trace
@@ -557,7 +558,10 @@ class Bot(Commands):
 
         body = 'Mention by @%s: %s' % (from_user.username, text)
         for username in re.findall(r'\W@\w+', text):
-            user = get_user_by_username(username[1:], session)
+            try:
+                user = get_user_by_username(username[1:], session)
+            except UserNotFound:
+                continue
             if user not in from_user.subscribers:
                 self.send_message(user.jid, body, mfrom = self.jid, mtype = 'chat', payload = event.payload)
 
