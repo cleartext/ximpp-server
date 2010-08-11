@@ -341,6 +341,7 @@ class Bot(Commands):
                  nickname = 'Bot',
                  firstname = 'Cleartext Microblogging',
                  avatar = 'data/avatar.jpg',
+                 max_tweet_length = None,
         ):
         self.users = defaultdict(dict) # Cache for some user's info
         self._load_state()
@@ -382,8 +383,7 @@ class Bot(Commands):
         self.nickname = nickname
         self.firstname = firstname
         self.avatar = avatar
-
-        search.start(self)
+        self.max_tweet_length = max_tweet_length
 
 
     def _load_state(self):
@@ -552,6 +552,18 @@ class Bot(Commands):
         text = event['body']
         from_user = get_user_by_jid(event['from'].jid, session)
 
+        text_len = len(text)
+        if self.max_tweet_length and text_len > self.max_tweet_length:
+            self.send_message(
+                from_user.jid,
+                'Your message is longer than %s characters (%s chars). '
+                'Your message has not been posted.' % (self.max_tweet_length, text_len),
+                mfrom = self.jid,
+                mtype = 'chat'
+            )
+            return
+
+
         body = '@%s: %s' % (from_user.username, text)
         for subscriber in from_user.subscribers:
             self.send_message(subscriber.jid, body, mfrom = self.jid, mtype = 'chat', payload = event.payload)
@@ -577,12 +589,14 @@ class Bot(Commands):
 
 
     def start(self):
+        search.start(self)
         self.xmpp.connect()
         self.xmpp.process(threaded = False)
 
     def stop(self):
         search.stop()
-        self.xmpp.disconnect()
+        if self.xmpp.socket is not None:
+            self.xmpp.disconnect()
 
 
 trace_methods(Bot)
