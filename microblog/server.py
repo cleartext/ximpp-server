@@ -55,21 +55,18 @@ def init(cfg):
     db.init(cfg['database'])
 
 
-def start_bot():
+def _start_bot():
     if len(sys.argv) != 2:
         print 'Usage: %s config.cfg' % sys.argv[0]
         sys.exit(1)
 
     cfg = yaml.load(open(sys.argv[1]).read())
-
-    init(cfg)
     bot = Bot(**cfg['component'])
-
     bot.start()
 
 
 
-def start_frontend():
+def _start_frontend():
     from microblog.frontend import Frontend
 
     if len(sys.argv) != 2:
@@ -77,11 +74,31 @@ def start_frontend():
         sys.exit(1)
 
     cfg = yaml.load(open(sys.argv[1]).read())
-
-    init(cfg)
-
     cfg['frontend']['login_url'] = '/login/'
     Frontend(**cfg['frontend']).start()
+
+
+def start_service():
+    from threading import Thread
+    from time import sleep
+
+    cfg = yaml.load(open(sys.argv[1]).read())
+    init(cfg)
+
+    bot_thread = Thread(target = _start_bot)
+    frontend_thread = Thread(target = _start_frontend)
+
+    bot_thread.daemon = True
+    frontend_thread.daemon = True
+
+    bot_thread.start()
+    frontend_thread.start()
+
+    while 1:
+        # Waiting for keyboard interrupt or killer
+        sleep(10)
+
+
 
 
 if __name__ == '__main__':
