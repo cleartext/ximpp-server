@@ -186,15 +186,19 @@ class Frontend(object):
     def start(self):
         self.log.debug('Starting frontend.')
 
-        application = tornado.web.Application([
-            url(r'/', FrontPage, name = 'front-page'),
-            url(r'/user/(\w+)/', User, name = 'user'),
-            url(r'/user/(\w+)/avatar/', Avatar, name = 'avatar'),
-            url(r'/user/(\w+)/follow/', Follow, name = 'follow'),
-            url(r'/user/(\w+)/unfollow/', Unfollow, name = 'unfollow'),
-            url(r'/login/', Login, name = 'login'),
-            url(r'/logout/', Logout, name = 'logout'),
-        ], **self.tornado_settings)
+        application = tornado.web.Application(
+            [
+                url(r'/', FrontPage, name = 'front-page'),
+                url(r'/user/(\w+)/', User, name = 'user'),
+                url(r'/user/(\w+)/avatar/', Avatar, name = 'avatar'),
+                url(r'/user/(\w+)/follow/', Follow, name = 'follow'),
+                url(r'/user/(\w+)/unfollow/', Unfollow, name = 'unfollow'),
+                url(r'/login/', Login, name = 'login'),
+                url(r'/logout/', Logout, name = 'logout'),
+            ],
+            static_path = os.path.join(os.path.dirname(__file__), 'media'),
+            **self.tornado_settings
+        )
 
         http_server = tornado.httpserver.HTTPServer(application)
         http_server.listen(self.port)
