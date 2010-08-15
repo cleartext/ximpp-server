@@ -15,6 +15,7 @@ from microblog.db_helpers import \
     get_user_by_username, \
     get_all_users
 from microblog.exceptions import UserNotFound
+from microblog.queue import QUEUE
 from microblog.models import SearchTerm
 from microblog.utils import trace_methods
 from pdb import set_trace
@@ -343,6 +344,7 @@ class Bot(Commands):
                  avatar = 'data/avatar.jpg',
                  max_tweet_length = None,
         ):
+        QUEUE.set_bot(self)
         self.users = defaultdict(dict) # Cache for some user's info
         self._load_state()
 
@@ -506,7 +508,6 @@ class Bot(Commands):
 
             if self._handle_commands(event, session) == False:
                 self.handle_new_message(event, session)
-                search.process_message(event)
         except Exception, e:
             self.log.exception('error during XMPP event processing')
             if self.debug:
@@ -576,6 +577,8 @@ class Bot(Commands):
                 continue
             if user not in from_user.subscribers:
                 self.send_message(user.jid, body, mfrom = self.jid, mtype = 'chat', payload = event.payload)
+
+        search.process_message(event)
 
 
     def send_message(self, mto, mbody,

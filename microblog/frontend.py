@@ -15,6 +15,7 @@ from microblog.db_helpers import \
     get_all_users
 from microblog.exceptions import UserNotFound
 from microblog.models import User
+from microblog.queue import QUEUE
 from pdb import set_trace
 
 
@@ -177,6 +178,19 @@ class Logout(Handler):
 
 
 
+class Post(Handler):
+    @tornado.web.authenticated
+    def post(self):
+        text = self.get_argument('text')
+        user = self.get_current_user()
+
+        QUEUE.add('post', text = text, user = user)
+
+        next = self.get_argument('next', '/')
+        self.redirect(next)
+
+
+
 class Frontend(object):
     def __init__(self, port = 8888, **tornado_settings):
         self.port = port
@@ -195,6 +209,7 @@ class Frontend(object):
                 url(r'/user/(\w+)/unfollow/', Unfollow, name = 'unfollow'),
                 url(r'/login/', Login, name = 'login'),
                 url(r'/logout/', Logout, name = 'logout'),
+                url(r'/post/', Post, name = 'post'),
             ],
             static_path = os.path.join(os.path.dirname(__file__), 'media'),
             **self.tornado_settings

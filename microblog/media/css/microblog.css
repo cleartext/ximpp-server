@@ -26,3 +26,16 @@ section#users > ul > li {
 section#users > ul > li > a {
     color: black;
 }
+
+section#text {
+    display: block;
+    margin-left: 100px;
+    margin-right: 500px;
+    text-align: right;
+}
+section#text textarea {
+    width: 100%;
+}
+section#text input {
+    margin-top: 1em;
+}

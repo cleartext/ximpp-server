@@ -4,6 +4,14 @@
 
 {% block content %}
 <article id="index">
+    {% if current_user %}
+    <section id="text">
+        <form action="/post/" method="POST">
+            <textarea name="text">Write your text here.</textarea>
+            <input type="submit" value="Post it!" />
+        </form>
+    </section>
+    {% end %}
     <section id="users">
         <h1>Users</h1>
         <ul>
