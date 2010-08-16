@@ -198,7 +198,7 @@ class Frontend(object):
         self.log = logging.getLogger('frontend')
 
     def start(self):
-        self.log.debug('Starting frontend.')
+        self.log.debug('Starting frontend on port %s.' % self.port)
 
         application = tornado.web.Application(
             [
