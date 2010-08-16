@@ -56,26 +56,32 @@ def init(cfg):
 
 
 def _start_bot():
-    if len(sys.argv) != 2:
-        print 'Usage: %s config.cfg' % sys.argv[0]
-        sys.exit(1)
+    try:
+        if len(sys.argv) != 2:
+            print 'Usage: %s config.cfg' % sys.argv[0]
+            sys.exit(1)
 
-    cfg = yaml.load(open(sys.argv[1]).read())
-    bot = Bot(**cfg['component'])
-    bot.start()
+        cfg = yaml.load(open(sys.argv[1]).read())
+        bot = Bot(**cfg['component'])
+        bot.start()
+    except:
+        logging.getLogger('init').exception('in bot thread')
 
 
 
 def _start_frontend():
-    from microblog.frontend import Frontend
+    try:
+        from microblog.frontend import Frontend
 
-    if len(sys.argv) != 2:
-        print 'Usage: %s config.cfg' % sys.argv[0]
-        sys.exit(1)
+        if len(sys.argv) != 2:
+            print 'Usage: %s config.cfg' % sys.argv[0]
+            sys.exit(1)
 
-    cfg = yaml.load(open(sys.argv[1]).read())
-    cfg['frontend']['login_url'] = '/login/'
-    Frontend(**cfg['frontend']).start()
+        cfg = yaml.load(open(sys.argv[1]).read())
+        cfg['frontend']['login_url'] = '/login/'
+        Frontend(**cfg['frontend']).start()
+    except:
+        logging.getLogger('init').exception('in frontend thread')
 
 
 def start_service():
