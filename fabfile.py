@@ -27,6 +27,9 @@ def mblog_cleartext_im():
 def cleartext_freightinvestor_com():
     env.hosts = ['cleartext.freightinvestor.com']
 
+def cleartext_tecala_com_au():
+    env.hosts = ['cleartext.tecala.com.au']
+
 
 def deploy():
     check_working_dir()
