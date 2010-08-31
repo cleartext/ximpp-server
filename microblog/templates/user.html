@@ -23,6 +23,28 @@
             <p>No vCard.</p>
         {% end %}
     </section>
+    {% if user.tweets %}
+    <section class="tweets">
+        <header><h1>Tweets</h1></header>
+        <dl class="tweets">
+        {% for tweet in user.tweets[:20] %}
+            <dt>At {{ tweet.created_at }}:</dt>
+            <dd>{{ tweet.text }}</dd>
+        {% end %}
+        </dl>
+    </section>
+    {% end %}
+    {% if user.friend_tweets %}
+    <section class="friend-tweets">
+        <header><h1>Friend Tweets</h1></header>
+        <dl class="tweets">
+        {% for tweet in user.friend_tweets[:20] %}
+            <dt>By @<a href="{{ reverse_url('user', tweet.username) }}">{{ escape(tweet.username) }}</a> at {{ tweet.created_at }}:</dt>
+            <dd>{{ tweet.text }}</dd>
+        {% end %}
+        </dl>
+    </section>
+    {% end %}
     <section class="followers">
         <header><h1>Followers</h1></header>
         <ul>
@@ -41,4 +63,3 @@
     </section>
 </article>
 {% end %}
-

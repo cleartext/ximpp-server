@@ -16,7 +16,7 @@ from microblog.db_helpers import \
     get_all_users
 from microblog.exceptions import UserNotFound
 from microblog.queue import QUEUE
-from microblog.models import SearchTerm
+from microblog.models import SearchTerm, Tweet
 from microblog.utils import trace_methods
 from pdb import set_trace
 from xml.etree import cElementTree as ET
@@ -564,6 +564,14 @@ class Bot(Commands):
             )
             return
 
+        try:
+            tweet = Tweet(
+                username = from_user.username,
+                text = text
+            )
+            session.add(tweet)
+        except Exception:
+            self.log.exception('can\'t save tweet')
 
         body = '@%s: %s' % (from_user.username, text)
         for subscriber in from_user.subscribers:

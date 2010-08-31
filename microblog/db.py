@@ -37,7 +37,7 @@ def init(cfg):
         max_overflow = cfg.get('max_overflow', 0),
     )
 
-    if opts.get('debug', False):
+    if cfg.get('debug', False):
         opts['echo'] = True
         opts['listeners'] = [DebugListener()]
 

@@ -1,12 +1,15 @@
+import datetime
+
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Unicode, UnicodeText, \
-                       DateTime, Table, ForeignKey, Boolean
+                       DateTime, Table, ForeignKey, Boolean, \
+                       Integer
 from sqlalchemy.orm import relationship
 from pdb import set_trace
 
 Base = declarative_base()
 
-subscribers = Table('subscribers', Base.metadata,
+subscribers_t = Table('subscribers', Base.metadata,
     Column('user', Unicode, ForeignKey('users.username')),
     Column('subscriber', Unicode, ForeignKey('users.username'))
 )
@@ -17,6 +20,7 @@ class VCard(Base):
     username = Column(Unicode, primary_key = True)
     vcard = Column(UnicodeText)
     created_at = Column(DateTime)
+
 
 
 class User(Base):
@@ -30,11 +34,26 @@ class User(Base):
 
     subscribers = relationship(
         'User',
-        secondary = subscribers,
+        secondary = subscribers_t,
         backref = 'contacts',
         primaryjoin = 'User.username == subscribers.c.user',
         secondaryjoin = 'subscribers.c.subscriber == User.username',
     )
+
+    friend_tweets = relationship(
+        'Tweet',
+        secondary = subscribers_t,
+        order_by = 'desc(Tweet.id)',
+        primaryjoin = 'User.username == subscribers.c.subscriber',
+        secondaryjoin = 'subscribers.c.user == Tweet.username',
+    )
+
+    tweets = relationship(
+        'Tweet',
+        order_by = 'desc(Tweet.id)',
+        backref = 'user',
+    )
+
 
     _vcard = relationship('VCard', backref = 'user')
 
@@ -58,9 +77,16 @@ class SearchTerm(Base):
         self.username = username
 
 
-class Message(object):
-    def __init__(self, date, user, text):
-        self.date = date
-        self.user = user
+
+class Tweet(Base):
+    __tablename__ = 'tweets'
+    id = Column(Integer, primary_key = True)
+    username = Column(Unicode, ForeignKey('users.username'), ForeignKey('subscribers.user'))
+    text = Column(Unicode)
+    created_at = Column(DateTime)
+
+    def __init__(self, username, text):
+        self.username = username
         self.text = text
+        self.created_at = datetime.datetime.utcnow()
 
