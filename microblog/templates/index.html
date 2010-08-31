@@ -17,7 +17,7 @@
             <dl class="tweets">
             {% for tweet in current_user.friend_tweets[:20] %}
                 <dt>By @<a href="{{ reverse_url('user', tweet.username) }}">{{ escape(tweet.username) }}</a> at {{ tweet.created_at }}:</dt>
-                <dd>{{ tweet.text }}</dd>
+                <dd>{{ escape(tweet.text) }}</dd>
             {% end %}
             </dl>
         </section>
