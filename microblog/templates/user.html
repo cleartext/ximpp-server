@@ -7,7 +7,7 @@
             <header><h1>Your profile.</h1></header>
         {% else %}
             <header><h1>{{ escape(user.username) }}'s profile.</h1></header>
-            {% if user not in current_user.contacts %}
+            {% if current_user and user not in current_user.contacts %}
                 <a href="{{ reverse_url('follow', user.username) }}?next={{ request.uri }}">Follow</a>
             {% else %}
                 <p>You already follow this person. <a href="{{ reverse_url('unfollow', user.username) }}?next={{ request.uri }}">Unfollow</a>.</p>
