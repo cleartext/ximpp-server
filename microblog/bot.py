@@ -567,7 +567,7 @@ class Bot(Commands):
         try:
             tweet = Tweet(
                 username = from_user.username,
-                text = text
+                text = text,
             )
             session.add(tweet)
         except Exception:

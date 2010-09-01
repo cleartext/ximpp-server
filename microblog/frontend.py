@@ -182,6 +182,7 @@ class Post(Handler):
     @tornado.web.authenticated
     def post(self):
         text = self.get_argument('text')
+        text = escape.xhtml_escape(text)
         user = self.get_current_user()
 
         QUEUE.add('post', text = text, user = user)
