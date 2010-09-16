@@ -30,6 +30,8 @@ def cleartext_freightinvestor_com():
 def cleartext_tecala_com_au():
     env.hosts = ['cleartext.tecala.com.au']
 
+def cleartext_carsales_com_au():
+    env.hosts = ['209.20.72.224']
 
 def deploy():
     check_working_dir()
