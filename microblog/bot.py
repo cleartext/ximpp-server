@@ -27,8 +27,7 @@ __version__ = changelog.current_version()
 
 
 class Payload(list):
-    """ This class helps to extend cleartext's stanzas.
-    """
+    """This class helps to extend cleartext's stanzas."""
 
     def __init__(self, event, bot, session):
         super(Payload, self).__init__(
@@ -45,7 +44,6 @@ class Payload(list):
         del d['_bot']
         del d['_session']
 
-
     def _find_buddy_node(self):
         for node in self:
             if node.tag == '{http://cleartext.net/mblog}x':
@@ -56,18 +54,16 @@ class Payload(list):
         avatar_hash = self._bot.users[user.username].get('photo', '')
 
         x_e = ET.Element(ns + 'x')
-        buddy_e = ET.SubElement(x_e, 'buddy', type = 'sender')
+        buddy_e = ET.SubElement(x_e, 'buddy', type='sender')
         ET.SubElement(buddy_e, 'displayName').text = \
             user.vcard and unicode(user.vcard.NICKNAME) \
             or user.username
         ET.SubElement(buddy_e, 'userName').text = user.username
         ET.SubElement(buddy_e, 'jid').text = user.jid
-        ET.SubElement(buddy_e, 'avatar', type = 'hash').text = avatar_hash
+        ET.SubElement(buddy_e, 'avatar', type='hash').text = avatar_hash
         ET.SubElement(buddy_e, 'serviceJid').text = self._bot.jid
         self.append(x_e)
         return buddy_e
-
-
 
     def _set_text(self, text):
         if getattr(self, '_text', None) is None:
@@ -78,7 +74,6 @@ class Payload(list):
         else:
             self._text.text = text
 
-
     def _get_text(self):
         _text = getattr(self, '_text', None)
         if _text is None:
@@ -86,11 +81,9 @@ class Payload(list):
         else:
             return _text.text
 
-
     text = property(_get_text, _set_text)
 
-
-    def add_node(self, name, text = None):
+    def add_node(self, name, text=None):
         buddy = self._find_buddy_node()
         if buddy is not None:
             el = ET.SubElement(buddy, '{http://cleartext.net/mblog}' + name )
@@ -98,12 +91,10 @@ class Payload(list):
                 el.text = text
 
 
-
 class Commands(object):
-    """
-    Mixin with commands.
-    """
-    def _show_followers(self, event, session = None):
+    """Mixin with commands."""
+
+    def _show_followers(self, event, session=None):
         user = get_user_by_jid(event['from'].jid, session)
         if user:
             followers = list(user.subscribers)
@@ -113,10 +104,9 @@ class Commands(object):
                 )
             else:
                 body = 'You have no followers.'
-            self.xmpp.sendMessage(user.jid, body, mfrom = self.jid, mtype = 'chat')
+            self.xmpp.sendMessage(user.jid, body, mfrom=self.jid, mtype='chat')
 
-
-    def _show_contacts(self, event, session = None):
+    def _show_contacts(self, event, session=None):
         user = get_user_by_jid(event['from'].jid, session)
         if user:
             contacts = list(user.contacts)
@@ -126,16 +116,15 @@ class Commands(object):
                 )
             else:
                 body = 'You have no contacts.'
-            self.xmpp.sendMessage(user.jid, body, mfrom = self.jid, mtype = 'chat')
+            self.xmpp.sendMessage(user.jid, body, mfrom=self.jid, mtype='chat')
 
-
-    def _unfollow(self, event, username, session = None):
+    def _unfollow(self, event, username, session=None):
         user = get_user_by_jid(event['from'].jid, session)
         contact = get_user_by_username(username, session)
 
         if not contact:
             body = 'User @%s not found.' % username
-            self.xmpp.sendMessage(event['from'].jid, body, mfrom = self.jid, mtype = 'chat')
+            self.xmpp.sendMessage(event['from'].jid, body, mfrom=self.jid, mtype='chat')
             return
 
         for idx, u in enumerate(user.contacts):
@@ -163,20 +152,18 @@ class Commands(object):
             mtype = 'chat'
         )
 
-
-
-    def _follow(self, event, username, session = None):
+    def _follow(self, event, username, session=None):
         user = get_user_by_jid(event['from'].jid, session)
         contact = get_user_by_username(username, session)
 
         if not contact:
             body = 'User @%s not found.' % username
-            self.xmpp.sendMessage(event['from'].jid, body, mfrom = self.jid, mtype = 'chat')
+            self.xmpp.sendMessage(event['from'].jid, body, mfrom=self.jid, mtype='chat')
             return
 
         if user == contact:
             body = 'You can\'t follow youself.'
-            self.xmpp.sendMessage(event['from'].jid, body, mfrom = self.jid, mtype = 'chat')
+            self.xmpp.sendMessage(event['from'].jid, body, mfrom=self.jid, mtype='chat')
             return
 
         if contact in user.contacts:
@@ -204,14 +191,12 @@ class Commands(object):
             mtype = 'chat'
         )
 
-
-    def _whoami(self, event, session = None):
+    def _whoami(self, event, session=None):
         user = get_user_by_jid(event['from'].jid, session)
         body = 'Username: %s\nJID: %s' % (user.username, user.jid)
-        self.xmpp.sendMessage(user.jid, body, mfrom = self.jid, mtype = 'chat')
+        self.xmpp.sendMessage(user.jid, body, mfrom=self.jid, mtype='chat')
 
-
-    def _direct_message(self, event, username, message, session = None):
+    def _direct_message(self, event, username, message, session=None):
         user = get_user_by_username(username, session)
         from_ = get_user_by_jid(event['from'].jid, session)
 
@@ -219,28 +204,26 @@ class Commands(object):
 
         if user:
             body = 'Direct message from @%s: %s' % (from_.username, message)
-            self.send_message(user.jid, body, mfrom = self.jid, mtype = 'chat', payload = event.payload)
+            self.send_message(user.jid, body, mfrom=self.jid, mtype='chat', payload=event.payload)
         else:
             body = 'User @%s not found.' % username
-            self.send_message(from_.jid, body, mfrom = self.jid, mtype = 'chat', payload = event.payload)
+            self.send_message(from_.jid, body, mfrom=self.jid, mtype='chat', payload=event.payload)
 
-
-    def _reply_message(self, event, username, message, session = None):
+    def _reply_message(self, event, username, message, session=None):
         user = get_user_by_username(username, session)
         from_ = get_user_by_jid(event['from'].jid, session)
 
         if user:
             body = 'Reply from @%s: %s' % (from_.username, message)
-            self.send_message(user.jid, body, mfrom = self.jid, mtype = 'chat', payload = event.payload)
+            self.send_message(user.jid, body, mfrom=self.jid, mtype='chat', payload=event.payload)
         else:
             body = 'User @%s not found.' % username
-            self.send_message(from_.jid, body, mfrom = self.jid, mtype = 'chat', payload = event.payload)
+            self.send_message(from_.jid, body, mfrom=self.jid, mtype='chat', payload=event.payload)
 
-
-    def _add_search(self, event, word, session = None):
+    def _add_search(self, event, word, session=None):
         user = get_user_by_jid(event['from'].jid, session)
         try:
-            neightbours = search.add_search(word, user.username, max_neightbours = 21)
+            neightbours = search.add_search(word, user.username, max_neightbours=21)
         except IntegrityError:
             message = 'You already watching for these terms.'
         else:
@@ -258,14 +241,12 @@ class Commands(object):
             mtype = 'chat'
         )
 
-
-    def _remove_search(self, event, word, session = None):
+    def _remove_search(self, event, word, session=None):
         user = get_user_by_jid(event['from'].jid, session)
         search.remove_search(word, user.username)
-        self.xmpp.sendMessage(user.jid, 'Search on "%s" was dropped' % word, mfrom = self.jid, mtype = 'chat')
+        self.xmpp.sendMessage(user.jid, 'Search on "%s" was dropped' % word, mfrom=self.jid, mtype='chat')
 
-
-    def _show_searches(self, event, session = None):
+    def _show_searches(self, event, session=None):
         user = get_user_by_jid(event['from'].jid, session)
         terms = session.query(SearchTerm).filter(SearchTerm.username == user.username)
 
@@ -275,14 +256,12 @@ class Commands(object):
             )
         else:
             body = 'You have no searches.'
-        self.xmpp.sendMessage(user.jid, body, mfrom = self.jid, mtype = 'chat')
+        self.xmpp.sendMessage(user.jid, body, mfrom=self.jid, mtype='chat')
 
-
-    def _show_help(self, event, session = None):
+    def _show_help(self, event, session=None):
         user = get_user_by_jid(event['from'].jid, session)
 
-        self.xmpp.sendMessage(user.jid, self._COMMANDS_HELP, mfrom = self.jid, mtype = 'chat')
-
+        self.xmpp.sendMessage(user.jid, self._COMMANDS_HELP, mfrom=self.jid, mtype='chat')
 
     _COMMANDS = [
         (r'^me$', _whoami, '"me" - shows who you are, your username and jid (Jabber ID)'),
@@ -305,34 +284,33 @@ class Commands(object):
     _COMMANDS = [(re.compile(regex, re.IGNORECASE), func, help)
                  for regex, func, help in _COMMANDS]
 
-
     def _handle_commands(self, event, session):
-        """ Checks if event contains controls sequence.
-            If it is, then True returned and command is processed,
-            otherwise, method returns False.
+        """Checks if event contains controls sequence.
+
+        If it is, then True returned and command is processed,
+        otherwise, method returns False.
         """
         message = event['body']
 
         for regex, func, help in self._COMMANDS:
             match = regex.match(message)
             if match is not None:
-                func(self, event, session = session, **match.groupdict())
+                func(self, event, session=session, **match.groupdict())
                 return True
 
         return False
 
 
-
 class ComponentXMPP(sleekxmpp.componentxmpp.ComponentXMPP):
-    """ Wrapper around sleekxmpp's component.
-        Used to stop all threads on disconnect.
+    """Wrapper around sleekxmpp's component.
+
+    This class used to stop all threads on disconnect.
     """
 
-    def disconnect(self, reconnect = False):
+    def disconnect(self, reconnect=False):
         super(ComponentXMPP, self).disconnect(reconnect)
         if not reconnect:
             search.stop()
-
 
 
 class Bot(Commands):
@@ -387,7 +365,6 @@ class Bot(Commands):
         self.avatar = avatar
         self.max_tweet_length = max_tweet_length
 
-
     def _load_state(self):
         state_filename = os.path.expanduser('~/.cleartext-bot.yml')
 
@@ -400,15 +377,14 @@ class Bot(Commands):
         if not self.state:
             self.state = {'version': '0.0'}
 
-
     def _save_state(self):
         with open(os.path.expanduser('~/.cleartext-bot.yml'), 'w') as f:
             yaml.dump(self.state, f)
 
-
     def _send_changes(self, users):
-        """ Sends changes to users if bot have configured,
-            and changes version number in the bot's state.
+        """Sends changes to users if bot have configured,
+
+        Also, this method increments version number in the bot's state.
         """
 
         if self.changelog_notifications:
@@ -438,8 +414,6 @@ class Bot(Commands):
                     )
         self.state['version'] = __version__
 
-
-
     def _handle_get_vcard(self, event):
         with open(self.avatar) as file:
             vcard = self.xmpp.plugin['xep_0054'].make_vcard(
@@ -452,11 +426,10 @@ class Bot(Commands):
             )
         self.xmpp.plugin['xep_0054'].return_vcard(event, vcard)
 
-
     def _send_presence(self, jid):
         """ Sends presence along with some extensions.
         """
-        presence = self.xmpp.Presence(sfrom = self.jid, sto = jid)
+        presence = self.xmpp.Presence(sfrom=self.jid, sto=jid)
 
         # vCard update
         vcard_update = ET.Element('{vcard-temp:x:update}x')
@@ -472,7 +445,6 @@ class Bot(Commands):
 
         self.xmpp.send(presence)
 
-
     def _send_presence_probe(self, jid):
         self.xmpp.sendPresence(
             ptype = 'probe',
@@ -480,10 +452,8 @@ class Bot(Commands):
             pto = jid,
         )
 
-
     @db_session
-    def handle_xmpp_connected(self, event, session = None):
-
+    def handle_xmpp_connected(self, event, session=None):
         users = get_all_users(session)
 
         for user in users:
@@ -494,9 +464,8 @@ class Bot(Commands):
         self._send_changes(users)
         self._save_state()
 
-
     @db_session
-    def _handle_message(self, event, session = None):
+    def _handle_message(self, event, session=None):
         try:
             if event['type'] == 'error':
                 # Do nothing if this is error message from the server
@@ -512,18 +481,15 @@ class Bot(Commands):
             self.log.exception('error during XMPP event processing')
             if self.debug:
                 body = 'ERROR: %s' % e
-                self.xmpp.sendMessage(event['from'].jid, body, mfrom = self.jid, mtype = 'chat')
-
+                self.xmpp.sendMessage(event['from'].jid, body, mfrom=self.jid, mtype='chat')
 
     @db_session
-    def _handle_status_change(self, event, session = None):
+    def _handle_status_change(self, event, session=None):
         # TODO think what to do on status change
         pass
 
-
     def _handle_presence_probe(self, event):
         self._send_presence(event['from'].jid)
-
 
     def _handle_presence_available(self, event):
         for part in event.getPayload():
@@ -532,22 +498,20 @@ class Bot(Commands):
                 if el is not None:
                     self.users[event['from'].jid.split('@', 1)[0]]['photo'] = el.text
 
-
     def _handle_presence_subscribe(self, subscription):
         user_jid = subscription['from'].jid
         user_domain = user_jid.rsplit('@', 1)[1]
 
         if user_domain == self.domain:
-            self.xmpp.sendPresenceSubscription(pto = user_jid, ptype='subscribed')
+            self.xmpp.sendPresenceSubscription(pto=user_jid, ptype='subscribed')
             self._send_presence(user_jid)
-            self.xmpp.sendPresenceSubscription(pto = user_jid, ptype='subscribe')
+            self.xmpp.sendPresenceSubscription(pto=user_jid, ptype='subscribe')
         else:
             self.log.warning(
                 'Access denied for user %s, because this bot service on the domain %s.' % \
                 (user_jid, self.domain)
             )
-            self.xmpp.sendPresenceSubscription(pto = user_jid, ptype = 'unsubscribed')
-
+            self.xmpp.sendPresenceSubscription(pto=user_jid, ptype='unsubscribed')
 
     def handle_new_message(self, event, session):
         text = event['body']
@@ -575,7 +539,7 @@ class Bot(Commands):
 
         body = '@%s: %s' % (from_user.username, text)
         for subscriber in from_user.subscribers:
-            self.send_message(subscriber.jid, body, mfrom = self.jid, mtype = 'chat', payload = event.payload)
+            self.send_message(subscriber.jid, body, mfrom=self.jid, mtype='chat', payload=event.payload)
 
         body = 'Mention by @%s: %s' % (from_user.username, text)
         for username in re.findall(r'\W@\w+', text):
@@ -584,25 +548,23 @@ class Bot(Commands):
             except UserNotFound:
                 continue
             if user not in from_user.subscribers:
-                self.send_message(user.jid, body, mfrom = self.jid, mtype = 'chat', payload = event.payload)
+                self.send_message(user.jid, body, mfrom=self.jid, mtype='chat', payload=event.payload)
 
         search.process_message(event)
 
-
     def send_message(self, mto, mbody,
-            msubject = None, mtype = None, mhtml = None,
-            mfrom = None, mnick = None, payload = []):
+            msubject=None, mtype=None, mhtml=None,
+            mfrom=None, mnick=None, payload=[]):
 
         msg = self.xmpp.makeMessage(mto,mbody,msubject,mtype,mhtml,mfrom,mnick)
         for item in payload:
             msg.setPayload(item)
         self.xmpp.send(msg)
 
-
     def start(self):
         search.start(self)
         self.xmpp.connect()
-        self.xmpp.process(threaded = False)
+        self.xmpp.process(threaded=False)
 
     def stop(self):
         search.stop()

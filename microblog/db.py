@@ -26,8 +26,9 @@ class DebugListener(PoolListener):
 
 
 def init(cfg):
-    """ This function should be called before Session use.
-        Input is a dict like object with databases settings from the config.
+    """This function should be called before Session use.
+
+    Input is a dict like object with databases settings from the config.
     """
     database_uri = 'mysql://%(username)s:%(password)s@%(host)s/%(dbname)s' % cfg
 
@@ -42,12 +43,11 @@ def init(cfg):
         opts['listeners'] = [DebugListener()]
 
     engine = create_engine(database_uri, **opts)
-    Session.configure(bind = engine)
-
+    Session.configure(bind=engine)
 
 
 def db_session(func):
-    """ Passes db session object to the function. """
+    """Decrator, passes db session object to the function."""
     @wraps(func)
     def wrapper(*args, **kwargs):
         if 'session' not in kwargs:

@@ -26,7 +26,6 @@ class Handler(tornado.web.RequestHandler):
         super(Handler, self).__init__(*args, **kwargs)
         self._session = Session()
 
-
     def get_template_path(self):
         path = self.application.settings.get('template_path')
         if path[0] != '/':
@@ -36,7 +35,6 @@ class Handler(tornado.web.RequestHandler):
             )
         return path
 
-
     def render(self, template, **kwargs):
         def _escape(value):
             return escape.xhtml_escape(unicode(value))
@@ -44,20 +42,17 @@ class Handler(tornado.web.RequestHandler):
         kwargs['quote'] = quote
         return super(Handler, self).render(template, **kwargs)
 
-
     def get_current_user(self):
         username = self.get_secure_cookie('session')
         if username:
             return get_user_by_username(username, self._session)
         return None
 
-
     def finish(self, *args, **kwargs):
         super(Handler, self).finish(*args, **kwargs)
         if self._session is not None:
             self._session.commit()
             self._session.close()
-
 
     def send_error(self, *args, **kwargs):
         if self._session is not None:
@@ -67,14 +62,12 @@ class Handler(tornado.web.RequestHandler):
         super(Handler, self).send_error(*args, **kwargs)
 
 
-
 class FrontPage(Handler):
     def get(self):
         self.render(
             'index.html',
             users = get_all_users(self._session)
         )
-
 
 
 class User(Handler):
@@ -88,13 +81,12 @@ class User(Handler):
         )
 
 
-
 class Follow(Handler):
     @tornado.web.authenticated
     def get(self, username):
         user = get_user_by_username(username, self._session)
         next = self.get_argument('next', '/')
-        self.render('follow.html', user = user, next = next)
+        self.render('follow.html', user=user, next=next)
 
 
     @tornado.web.authenticated
@@ -106,14 +98,12 @@ class Follow(Handler):
         self.redirect(next)
 
 
-
 class Unfollow(Handler):
     @tornado.web.authenticated
     def get(self, username):
         user = get_user_by_username(username, self._session)
         next = self.get_argument('next', '/')
-        self.render('unfollow.html', user = user, next = next)
-
+        self.render('unfollow.html', user=user, next=next)
 
     @tornado.web.authenticated
     def post(self, username):
@@ -122,7 +112,6 @@ class Unfollow(Handler):
             user.subscribers.remove(self.current_user)
         next = self.get_argument('next', '/')
         self.redirect(next)
-
 
 
 class Avatar(Handler):
@@ -138,11 +127,10 @@ class Avatar(Handler):
         self.write(message)
 
 
-
 class Login(Handler):
     def get(self):
         next = self.get_argument('next', '/')
-        self.render('login.html', next = next, errors = defaultdict(unicode))
+        self.render('login.html', next=next, errors=defaultdict(unicode))
 
     def post(self):
         username = self.get_argument('username')
@@ -162,20 +150,18 @@ class Login(Handler):
             else:
                 errors['password'] = 'Password mismatch.'
 
-        self.render('login.html', next = next, errors = errors)
-
+        self.render('login.html', next=next, errors=errors)
 
 
 class Logout(Handler):
     def get(self):
         next = self.get_argument('next', '/')
-        self.render('logout.html', next = next)
+        self.render('logout.html', next=next)
 
     def post(self):
         next = self.get_argument('next', '/')
         self.clear_cookie('session')
         self.redirect(next)
-
 
 
 class Post(Handler):
@@ -185,15 +171,14 @@ class Post(Handler):
         text = escape.xhtml_escape(text)
         user = self.get_current_user()
 
-        QUEUE.add('post', text = text, user = user)
+        QUEUE.add('post', text=text, user=user)
 
         next = self.get_argument('next', '/')
         self.redirect(next)
 
 
-
 class Frontend(object):
-    def __init__(self, port = 8888, **tornado_settings):
+    def __init__(self, port=8888, **tornado_settings):
         self.port = port
         self.tornado_settings = tornado_settings
         self.log = logging.getLogger('frontend')
@@ -203,14 +188,14 @@ class Frontend(object):
 
         application = tornado.web.Application(
             [
-                url(r'/', FrontPage, name = 'front-page'),
-                url(r'/user/(\w+)/', User, name = 'user'),
-                url(r'/user/(\w+)/avatar/', Avatar, name = 'avatar'),
-                url(r'/user/(\w+)/follow/', Follow, name = 'follow'),
-                url(r'/user/(\w+)/unfollow/', Unfollow, name = 'unfollow'),
-                url(r'/login/', Login, name = 'login'),
-                url(r'/logout/', Logout, name = 'logout'),
-                url(r'/post/', Post, name = 'post'),
+                url(r'/', FrontPage, name='front-page'),
+                url(r'/user/(\w+)/', User, name='user'),
+                url(r'/user/(\w+)/avatar/', Avatar, name='avatar'),
+                url(r'/user/(\w+)/follow/', Follow, name='follow'),
+                url(r'/user/(\w+)/unfollow/', Unfollow, name='unfollow'),
+                url(r'/login/', Login, name='login'),
+                url(r'/logout/', Logout, name='logout'),
+                url(r'/post/', Post, name='post'),
             ],
             static_path = os.path.join(os.path.dirname(__file__), 'media'),
             **self.tornado_settings

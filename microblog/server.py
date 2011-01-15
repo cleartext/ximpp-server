@@ -3,14 +3,13 @@
 import logging
 import signal
 import sys
+import threading
+import traceback
 import yaml
+
 
 from microblog import db
 from microblog.bot import Bot
-
-from pdb import set_trace
-
-import traceback, signal, threading
 
 
 def dumpstacks(signal, frame):
@@ -26,6 +25,7 @@ def dumpstacks(signal, frame):
 
 
 def debug(sig, frame):
+    from pdb import set_trace
     set_trace()
 
 
@@ -68,7 +68,6 @@ def _start_bot():
         logging.getLogger('init').exception('in bot thread')
 
 
-
 def _start_frontend():
     try:
         from microblog.frontend import Frontend
@@ -103,8 +102,6 @@ def start_service():
     while 1:
         # Waiting for keyboard interrupt or killer
         sleep(10)
-
-
 
 
 if __name__ == '__main__':

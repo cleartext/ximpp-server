@@ -14,22 +14,22 @@ subscribers_t = Table('subscribers', Base.metadata,
     Column('subscriber', Unicode, ForeignKey('users.username'))
 )
 
+
 class VCard(Base):
     __tablename__ = 'vcard'
 
-    username = Column(Unicode, primary_key = True)
+    username = Column(Unicode, primary_key=True)
     vcard = Column(UnicodeText)
     created_at = Column(DateTime)
-
 
 
 class User(Base):
     __tablename__ = 'users'
 
-    username = Column(Unicode, ForeignKey('vcard.username'), primary_key = True)
+    username = Column(Unicode, ForeignKey('vcard.username'), primary_key=True)
     password = Column(UnicodeText)
     created_at = Column(DateTime)
-    jid = Column(Unicode, unique = True)
+    jid = Column(Unicode, unique=True)
     presence = Column(Boolean)
 
     subscribers = relationship(
@@ -54,8 +54,7 @@ class User(Base):
         backref = 'user',
     )
 
-
-    _vcard = relationship('VCard', backref = 'user')
+    _vcard = relationship('VCard', backref='user')
 
     @property
     def vcard(self):
@@ -66,21 +65,19 @@ class User(Base):
         return None
 
 
-
 class SearchTerm(Base):
     __tablename__ = 'search_terms'
-    term = Column(Unicode, primary_key = True)
-    username = Column(Unicode, primary_key = True)
+    term = Column(Unicode, primary_key=True)
+    username = Column(Unicode, primary_key=True)
 
     def __init__(self, term, username):
         self.term = term
         self.username = username
 
 
-
 class Tweet(Base):
     __tablename__ = 'tweets'
-    id = Column(Integer, primary_key = True)
+    id = Column(Integer, primary_key=True)
     username = Column(Unicode, ForeignKey('users.username'), ForeignKey('subscribers.user'))
     text = Column(Unicode)
     created_at = Column(DateTime)
@@ -89,4 +86,3 @@ class Tweet(Base):
         self.username = username
         self.text = text
         self.created_at = datetime.datetime.utcnow()
-

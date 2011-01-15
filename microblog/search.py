@@ -12,15 +12,15 @@ from microblog.db_helpers import \
 from microblog.models import SearchTerm
 from sqlalchemy.orm.exc import NoResultFound
 
-from pdb import set_trace
+
+class Sentinel(object): pass
+
 
 class SearchCache(object):
-    """ This class holds all search terms and
-        usernames which are waiting results.
-    """
+    """This class holds all search terms and usernames which are waiting results."""
+
     def __init__(self):
         self._terms = {}
-
 
     def __getitem__(self, phrase):
         """ Each phrase splitted and saved along with usernames.
@@ -37,22 +37,19 @@ class SearchCache(object):
             )
         return self._terms[phrase]
 
-
     def items(self):
         return self._terms.itervalues()
-
 
 
 _searches = SearchCache()
 _queue = Queue()
 
-class Sentinel(object): pass
-
 
 @db_session
-def add_search(word, username, max_neightbours = 20, session = None):
-    """ Adds a new search for user.
-        Returns no more than 'max_neightbours' users who search same terms.
+def add_search(word, username, max_neightbours=20, session=None):
+    """Adds a new search for user.
+
+    Returns no more than 'max_neightbours' users who search same terms.
     """
     word = word.lower()
 
@@ -66,7 +63,7 @@ def add_search(word, username, max_neightbours = 20, session = None):
 
 
 @db_session
-def remove_search(word, username, session = None):
+def remove_search(word, username, session=None):
     word = word.lower()
 
     log = logging.getLogger('search')
@@ -97,7 +94,7 @@ def stop():
 
 
 @db_session
-def start(bot, session = None):
+def start(bot, session=None):
     log = logging.getLogger('search')
 
     log.debug('Loading search terms.')
@@ -109,7 +106,7 @@ def start(bot, session = None):
     log.debug('%d terms were loaded' % count)
 
     @db_session
-    def _process_event(event, session = None):
+    def _process_event(event, session=None):
         log.debug('Processing word "%s"' % event['body'])
 
         text = event['body']
@@ -142,7 +139,7 @@ def start(bot, session = None):
                     payload.add_node('searchTerm', term)
 
                 num_recipients += 1
-                bot.send_message(user.jid, body, mfrom = bot.jid, mtype = 'chat', payload = payload)
+                bot.send_message(user.jid, body, mfrom=bot.jid, mtype='chat', payload=payload)
 
         log.debug('This message was received by %s recipients.' % num_recipients)
 

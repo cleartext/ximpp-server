@@ -13,7 +13,7 @@ def load():
         )
     )
     changes = [(V(key), key, value) for key,value in changes.iteritems()]
-    return sorted(changes, key = lambda x: x[0], reverse = True)
+    return sorted(changes, key=lambda x: x[0], reverse=True)
 
 
 def current_version():
