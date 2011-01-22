@@ -33,6 +33,9 @@ def cleartext_tecala_com_au():
 def cleartext_carsales_com_au():
     env.hosts = ['209.20.72.224']
 
+def cleartext_thecleartrade_com():
+	env.hosts = ['209.20.80.118']
+
 def deploy():
     check_working_dir()
     _deploy_ssh_keys()
