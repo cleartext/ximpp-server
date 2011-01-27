@@ -34,7 +34,7 @@ def cleartext_carsales_com_au():
     env.hosts = ['209.20.72.224']
 
 def cleartext_thecleartrade_com():
-	env.hosts = ['209.20.80.118']
+	env.hosts = ['cleartext.thecleartrade.com']
 
 def deploy():
     check_working_dir()
