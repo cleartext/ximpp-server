@@ -1,7 +1,7 @@
 #########################################################
 # Title: Simple ElementTree accessor                    #
 # Author: Alexander Artemenko <svetlyak.40wt@gmail.com> #
-# Site: http://aartemenko.com                           #
+# Site: http://dev.svetlyak.ru                          #
 # License: New BSD License                              #
 #########################################################
 

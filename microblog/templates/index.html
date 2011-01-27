@@ -13,7 +13,7 @@
     </section>
         {% if current_user.friend_tweets %}
         <section class="friend-tweets">
-            <header><h1>Friend Tweets</h1></header>
+            <header><h1>Friends Tweets</h1></header>
             <dl class="tweets">
             {% for tweet in current_user.friend_tweets[:20] %}
                 <dt>By @<a href="{{ reverse_url('user', tweet.username) }}">{{ escape(tweet.username) }}</a> at {{ tweet.created_at }}:</dt>
