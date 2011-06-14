@@ -22,7 +22,6 @@ def mblog():
 def mblog_cleartext_im():
     env.hosts = ['mblog.cleartext.im']
 
-
 def cleartext_freightinvestor_com():
     env.hosts = ['cleartext.freightinvestor.com']
 
@@ -35,8 +34,11 @@ def cleartext_carsales_com_au():
 def cleartext_thecleartrade_com():
 	env.hosts = ['cleartext.thecleartrade.com']
 	
-def cleartext_cloudmore_com():
-	env.hosts = ['209.20.73.79']	
+#def cleartext_cloudmore_com():
+#	env.hosts = ['209.20.73.79']
+	
+def cleartext_enterprise2_im():
+	env.hosts = ['209.20.73.12']	
 
 def deploy():
     check_working_dir()
